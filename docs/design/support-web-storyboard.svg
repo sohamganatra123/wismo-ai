@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070a0f"/><stop offset=".55" stop-color="#101722"/><stop offset="1" stop-color="#080b10"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#19222e"/><stop offset="1" stop-color="#0c1118"/></linearGradient>
+    <linearGradient id="agent" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3f6fa"/><stop offset=".55" stop-color="#9aa8b8"/><stop offset="1" stop-color="#394452"/></linearGradient>
+    <filter id="amber"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="jade"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#8291a5" stroke-opacity=".075"/></pattern>
+    <style>
+      text{font-family:Inter,Arial,sans-serif;fill:#f4f6f8}.label{font-size:14px;font-weight:700;letter-spacing:2px;fill:#91a0b2}.title{font-family:Manrope,Inter,Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:-1.4px}.copy{font-size:18px;fill:#c7d0da}.ui{font-size:16px;font-weight:650}.small{font-size:14px;fill:#aab5c2}.dark{fill:#111720}.muted-dark{fill:#566273}.amber{fill:#ffb547}.jade{fill:#67d2aa}.line{fill:none;stroke:#7e8b9c;stroke-opacity:.3;stroke-width:2}.hot{fill:none;stroke:#ffb547;stroke-width:3;stroke-linecap:round}.card{fill:url(#panel);stroke:#9aabba;stroke-opacity:.25}.glass{fill:#111823;fill-opacity:.94;stroke:#9aabba;stroke-opacity:.25}.bubble{fill:#f4f6f8;stroke:#ffb547;stroke-width:6}.core{fill:#ffffff}.motion{font-size:13px;font-weight:750;letter-spacing:1.4px;fill:#ffb547}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/><rect width="1600" height="1000" fill="url(#grid)"/>
+  <text x="64" y="54" class="label">WISMO · EXPERIENCE STORYBOARD</text>
+  <text x="64" y="100" font-size="42" font-weight="780" letter-spacing="-1.5">One living support world. Four moments.</text>
+  <g transform="translate(64 142)">
+    <rect width="716" height="348" rx="22" class="card"/>
+    <text x="30" y="38" class="label amber">01 · CATCH + COLLAPSE</text><text x="30" y="80" class="title">WISMO catches the request.</text>
+    <text x="30" y="110" class="copy">The agent focuses, then compresses into one working bubble.</text>
+    <g transform="translate(28 142)">
+      <rect width="150" height="58" rx="10" class="glass"/><circle cx="20" cy="20" r="5" fill="#ffb547"/><text x="34" y="25" class="ui">Where is order?</text><text x="18" y="46" class="small">#10482 · arriving now</text>
+      <rect y="72" width="150" height="58" rx="10" class="glass" opacity=".68"/><text x="18" y="98" class="ui">Return request</text><text x="18" y="119" class="small">#10483 · queued</text>
+    </g>
+    <path d="M190 174 C260 174 270 234 334 234" class="hot" filter="url(#amber)"/>
+    <g transform="translate(324 142)"><circle cx="60" cy="42" r="29" fill="url(#agent)"/><path d="M24 150L35 84 60 68 87 85 101 150Z" fill="url(#agent)"/><path d="M45 36L63 15 85 35 72 59 47 59Z" fill="#e7edf3" opacity=".8"/><rect x="19" y="150" width="86" height="8" rx="4" fill="#ffb547" opacity=".7" filter="url(#amber)"/><text x="20" y="184" class="motion">HUMANOID</text></g>
+    <path d="M438 226 C450 226 455 226 463 226" class="hot"/><path d="M455 219L465 226 455 233" class="hot"/>
+    <g transform="translate(466 202)"><circle cx="24" cy="24" r="22" class="bubble" filter="url(#amber)"/><circle cx="24" cy="24" r="8" class="core"/><text x="-4" y="70" class="motion">BUBBLE</text></g>
+    <g transform="translate(550 148)"><rect width="134" height="46" rx="9" class="glass"/><text x="14" y="28" class="ui">Shopify</text><rect y="60" width="134" height="46" rx="9" class="glass"/><text x="14" y="88" class="ui">Carrier</text><rect y="120" width="134" height="46" rx="9" class="glass"/><text x="14" y="148" class="ui">History</text></g>
+    <text x="30" y="326" class="small">LIVE  ·  37 HANDLED TODAY</text><text x="536" y="326" class="small jade">84% END-TO-END</text>
+  </g>
+  <g transform="translate(820 142)">
+    <rect width="716" height="348" rx="22" class="card"/>
+    <text x="30" y="38" class="label amber">02 · OPEN + UNDERSTAND</text><text x="30" y="80" class="title">The bubble reads in place.</text>
+    <text x="30" y="110" class="copy">Customer words stay large while WISMO becomes the scan line.</text>
+    <g transform="translate(30 142)"><rect width="390" height="148" rx="16" fill="#f3f5f7"/><text x="24" y="30" font-size="14" font-weight="700" letter-spacing="1.5" class="muted-dark">CUSTOMER · #10482</text><text x="24" y="61" font-size="20" font-weight="700" class="dark">“My parcel was due yesterday.</text><text x="24" y="87" font-size="20" font-weight="700" class="dark">Can you tell me where</text><text x="24" y="113" font-size="20" font-weight="700" class="dark">it is?”</text><rect x="24" y="128" width="248" height="3" rx="2" fill="#ffb547"/></g>
+    <g transform="translate(448 142)"><rect width="238" height="148" rx="16" class="glass"/><text x="20" y="29" class="label">UNDERSTOOD</text><text x="20" y="61" class="ui">Intent</text><text x="108" y="61" class="ui amber">Order status</text><text x="20" y="91" class="ui">Urgency</text><text x="108" y="91" class="ui">Late delivery</text><text x="20" y="121" class="ui">Next</text><text x="108" y="121" class="ui jade">Investigate</text></g>
+    <g transform="translate(402 198)"><circle cx="20" cy="20" r="17" class="bubble" filter="url(#amber)"/><circle cx="20" cy="20" r="6" class="core"/></g><path d="M64 270H390" class="hot" filter="url(#amber)"/><circle cx="298" cy="270" r="6" fill="#fff"/><text x="30" y="326" class="small">BUBBLE → SCAN LINE → BUBBLE</text>
+  </g>
+  <g transform="translate(64 530)">
+    <rect width="716" height="396" rx="22" class="card"/>
+    <text x="30" y="38" class="label amber">03 · ENTER SYSTEM BLOCKS</text><text x="30" y="80" class="title">One bubble. Every source.</text>
+    <text x="30" y="110" class="copy">WISMO reshapes inside each system and returns with evidence.</text>
+    <g transform="translate(30 136)">
+      <path d="M62 105 C155 16 250 38 334 94 S500 165 620 63" class="line"/><path d="M62 105 C185 198 287 205 410 132 S535 42 620 63" class="line"/><path d="M62 105 C180 96 280 98 410 132" class="hot" filter="url(#amber)"/>
+      <g><circle cx="62" cy="105" r="34" fill="none" stroke="#91a0b2" stroke-dasharray="5 6" opacity=".55"/><text x="22" y="158" class="label">RETURN</text></g>
+      <g transform="translate(180 24)"><rect width="126" height="56" rx="10" class="glass"/><text x="15" y="24" class="ui">Shopify</text><text x="15" y="45" class="small jade">Order found</text></g>
+      <g transform="translate(348 104)"><rect width="126" height="56" rx="10" class="glass"/><text x="15" y="24" class="ui">Courier</text><text x="15" y="45" class="small amber">Delay found</text></g>
+      <g transform="translate(532 34)"><rect width="126" height="56" rx="10" class="glass"/><text x="15" y="24" class="ui">Policy</text><text x="15" y="45" class="small jade">Action clear</text></g>
+      <circle cx="410" cy="132" r="24" class="bubble" filter="url(#amber)"/><circle cx="410" cy="132" r="8" class="core"/><text x="379" y="178" class="motion">WISMO</text>
+      <path d="M381 161 C330 192 270 205 208 205" class="hot"/><g transform="translate(148 188)"><rect width="430" height="48" rx="12" class="glass"/><text x="18" y="29" class="ui">Evidence returned: delayed at depot · ETA tomorrow</text></g>
+    </g>
+    <text x="30" y="374" class="small">42 SEC MEDIAN FIRST ACTION</text>
+  </g>
+  <g transform="translate(820 530)">
+    <rect width="716" height="396" rx="22" class="card"/>
+    <text x="30" y="38" class="label jade">04 · RETURN + DECIDE</text><text x="30" y="80" class="title">Back at the desk in seconds.</text>
+    <text x="30" y="110" class="copy">The bubble becomes WISMO again. The evidence becomes an answer.</text>
+    <g transform="translate(30 138)"><rect width="430" height="124" rx="16" fill="#f3f5f7"/><text x="22" y="25" font-size="14" font-weight="700" letter-spacing="1.5" class="muted-dark">READY TO SEND</text><text x="22" y="52" font-size="17" font-weight="700" class="dark">Your parcel was delayed at</text><text x="22" y="78" font-size="17" font-weight="700" class="dark">the regional depot. It is moving again</text><text x="22" y="104" font-size="17" font-weight="700" class="dark">and should arrive tomorrow.</text></g>
+    <g transform="translate(482 138)"><rect width="204" height="56" rx="12" fill="#18352e" stroke="#67d2aa" stroke-opacity=".6"/><text x="18" y="23" class="label jade">RESOLVED</text><text x="18" y="45" class="ui">Handled end-to-end</text><rect y="70" width="204" height="56" rx="12" fill="#352b1d" stroke="#ffb547" stroke-opacity=".6"/><text x="18" y="93" class="label amber">HUMAN LANE</text><text x="18" y="115" font-size="14" font-weight="650">Judgment required</text></g>
+    <g transform="translate(30 282)"><rect width="656" height="64" rx="12" class="glass"/><text x="18" y="25" class="label">CLICK TO SEE WHY</text><text x="18" y="49" class="ui">Understood issue → checked order → verified delay → answered</text></g>
+  </g>
+  <g transform="translate(64 958)"><text class="label">SCROLL JOURNEY</text><line x1="150" y1="-5" x2="1472" y2="-5" stroke="#34404e" stroke-width="2"/><circle cx="150" cy="-5" r="6" fill="#ffb547"/><circle cx="330" cy="-5" r="5" fill="#657284"/><circle cx="510" cy="-5" r="5" fill="#657284"/><circle cx="690" cy="-5" r="5" fill="#657284"/><circle cx="870" cy="-5" r="5" fill="#657284"/><circle cx="1050" cy="-5" r="5" fill="#657284"/><circle cx="1230" cy="-5" r="5" fill="#657284"/><circle cx="1472" cy="-5" r="6" fill="#67d2aa"/></g>
+</svg>
