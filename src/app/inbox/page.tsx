@@ -1,40 +1,8 @@
 import Link from "next/link";
+import { cases } from "./caseData";
 import styles from "./page.module.css";
 
 export const metadata = { title: "Human attention · WISMO" };
-
-const cases = [
-  {
-    id: "WIS-1048",
-    customer: "Amina Malik",
-    order: "#4921",
-    reason: "Tracking conflict",
-    deadline: "18 min",
-    urgency: "urgent",
-    recommendation: "Ask Northline which scan is current before replying to Amina.",
-    note: "Shopify says out for delivery; the courier feed says delivery failed.",
-  },
-  {
-    id: "WIS-1046",
-    customer: "Jon Bell",
-    order: "#4887",
-    reason: "Identity needs review",
-    deadline: "34 min",
-    urgency: "watch",
-    recommendation: "Verify the checkout email before showing any order details.",
-    note: "The sender address does not match the Shopify customer record.",
-  },
-  {
-    id: "WIS-1041",
-    customer: "Mei Tan",
-    order: "#4812",
-    reason: "Courier did not reply",
-    deadline: "52 min",
-    urgency: "watch",
-    recommendation: "Approve escalation to the store support lead.",
-    note: "Three courier follow-ups were sent with no new tracking information.",
-  },
-];
 
 export default function HumanAttentionInbox() {
   return (
@@ -67,12 +35,12 @@ export default function HumanAttentionInbox() {
 
           <div className={styles.caseList}>
             {cases.map((item) => (
-              <article className={styles.case} key={item.id}>
-                <div className={styles.identity}><span className={styles.avatar}>{item.customer.split(" ").map((part) => part[0]).join("")}</span><div><strong>{item.customer}</strong><small>{item.order} · {item.id}</small></div></div>
+              <Link className={styles.case} href={`/inbox/${item.id}`} key={item.id} aria-label={`Open ${item.customer}, order ${item.order}`}>
+                <div className={styles.identity}><span className={styles.avatar}>{item.initials}</span><div><strong>{item.customer}</strong><small>{item.order} · {item.id}</small></div></div>
                 <div className={styles.reason}><strong>{item.reason}</strong><small>{item.note}</small></div>
                 <p>{item.recommendation}</p>
                 <div className={styles.deadline} data-urgency={item.urgency}><small>Respond within</small><strong>{item.deadline}</strong></div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
