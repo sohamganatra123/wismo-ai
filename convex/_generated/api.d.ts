@@ -15,6 +15,7 @@ import type * as domain_access from "../domain/access.js";
 import type * as domain_approvals from "../domain/approvals.js";
 import type * as domain_fixtures from "../domain/fixtures.js";
 import type * as domain_gmail from "../domain/gmail.js";
+import type * as domain_inboundClassification from "../domain/inboundClassification.js";
 import type * as domain_oauthState from "../domain/oauthState.js";
 import type * as domain_retries from "../domain/retries.js";
 import type * as domain_stateMachine from "../domain/stateMachine.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   "domain/approvals": typeof domain_approvals;
   "domain/fixtures": typeof domain_fixtures;
   "domain/gmail": typeof domain_gmail;
+  "domain/inboundClassification": typeof domain_inboundClassification;
   "domain/oauthState": typeof domain_oauthState;
   "domain/retries": typeof domain_retries;
   "domain/stateMachine": typeof domain_stateMachine;
