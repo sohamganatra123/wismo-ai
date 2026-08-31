@@ -68,4 +68,9 @@
 
 - [x] Show all poll outcomes without presenting ignored mail as a case.
 - [x] Run lint, all tests, TypeScript, and the production build.
-- [ ] Deploy and demonstrate one unrelated email and one empty or unclear WISMO email against the test inbox.
+- [x] Deploy and demonstrate one unrelated email and one empty or unclear WISMO email against the test inbox.
+
+Live proof on 31 Aug 2026:
+
+- Unclear delivery email: 1 checked, 1 clarification reply, 0 cases.
+- Unrelated email: 1 checked, 1 ignored, 0 replies, 0 cases.
