@@ -16,7 +16,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       const db = ctx.db as unknown as MutationCtx["db"];
       const typedUserId = userId as Id<"users">;
       const email = profile.email ? normalizeEmail(profile.email) : "";
-      const emailVerified = profile.emailVerified === true;
+      const googleProfile = profile as typeof profile & { email_verified?: boolean | null };
+      const emailVerified = profile.emailVerified === true || googleProfile.email_verified === true;
       if (!email) throw new Error("Google account email is required");
 
       const currentProfile = await db.query("profiles").withIndex("by_user", (q) => q.eq("userId", typedUserId)).unique();
