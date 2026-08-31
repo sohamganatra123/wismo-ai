@@ -16,10 +16,10 @@ export const getFounderIntegrationStatus = query({
 });
 
 export const saveIntegration = internalMutation({
-  args: { kind: v.union(v.literal("gmail"), v.literal("shopify")), accountLabel: v.string(), encryptedCredentials: v.string(), connectedBy: v.id("users") },
+  args: { kind: v.union(v.literal("gmail"), v.literal("shopify")), accountLabel: v.string(), encryptedCredentials: v.string(), connectedBy: v.id("users"), cursor: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const existing = await ctx.db.query("integrations").withIndex("by_kind", (q) => q.eq("kind", args.kind)).unique();
-    const values = { accountLabel: args.accountLabel, encryptedCredentials: args.encryptedCredentials, connectedBy: args.connectedBy, updatedAt: Date.now() };
+    const values = { accountLabel: args.accountLabel, encryptedCredentials: args.encryptedCredentials, connectedBy: args.connectedBy, updatedAt: Date.now(), ...(args.cursor ? { cursor: args.cursor } : {}) };
     if (existing) {
       await ctx.db.patch(existing._id, values);
       return existing._id;

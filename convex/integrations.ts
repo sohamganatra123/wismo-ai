@@ -60,10 +60,10 @@ export const gmailOAuthCallback = httpAction(async (ctx, request) => {
     const tokens = await tokenResponse.json() as { access_token?: string; refresh_token?: string; expires_in?: number; scope?: string; error?: string };
     if (!tokenResponse.ok || !tokens.access_token || !tokens.refresh_token) throw new Error(tokens.error ?? "Google token exchange failed");
     const profileResponse = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", { headers: { Authorization: `Bearer ${tokens.access_token}` } });
-    const profile = await profileResponse.json() as { emailAddress?: string };
+    const profile = await profileResponse.json() as { emailAddress?: string; historyId?: string };
     if (!profileResponse.ok || !profile.emailAddress) throw new Error("Could not read the connected Gmail account");
     const encryptedCredentials = await encryptCredentials(tokens, required("INTEGRATION_ENCRYPTION_KEY"));
-    await ctx.runMutation(internal.integrationData.saveIntegration, { kind: "gmail", accountLabel: profile.emailAddress, encryptedCredentials, connectedBy: userId });
+    await ctx.runMutation(internal.integrationData.saveIntegration, { kind: "gmail", accountLabel: profile.emailAddress, encryptedCredentials, connectedBy: userId, cursor: profile.historyId });
     return Response.redirect(`${siteUrl}/connect?gmail=connected`, 302);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Gmail connection failed";

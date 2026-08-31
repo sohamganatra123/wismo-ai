@@ -10,14 +10,18 @@
 
 import type * as access from "../access.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as domain_access from "../domain/access.js";
 import type * as domain_approvals from "../domain/approvals.js";
 import type * as domain_fixtures from "../domain/fixtures.js";
+import type * as domain_gmail from "../domain/gmail.js";
 import type * as domain_oauthState from "../domain/oauthState.js";
 import type * as domain_retries from "../domain/retries.js";
 import type * as domain_stateMachine from "../domain/stateMachine.js";
 import type * as domain_tracking from "../domain/tracking.js";
 import type * as env from "../env.js";
+import type * as gmailData from "../gmailData.js";
+import type * as gmailPolling from "../gmailPolling.js";
 import type * as http from "../http.js";
 import type * as integrationData from "../integrationData.js";
 import type * as integrations from "../integrations.js";
@@ -34,14 +38,18 @@ import type {
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   auth: typeof auth;
+  crons: typeof crons;
   "domain/access": typeof domain_access;
   "domain/approvals": typeof domain_approvals;
   "domain/fixtures": typeof domain_fixtures;
+  "domain/gmail": typeof domain_gmail;
   "domain/oauthState": typeof domain_oauthState;
   "domain/retries": typeof domain_retries;
   "domain/stateMachine": typeof domain_stateMachine;
   "domain/tracking": typeof domain_tracking;
   env: typeof env;
+  gmailData: typeof gmailData;
+  gmailPolling: typeof gmailPolling;
   http: typeof http;
   integrationData: typeof integrationData;
   integrations: typeof integrations;

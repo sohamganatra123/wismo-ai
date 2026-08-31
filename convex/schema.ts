@@ -35,7 +35,7 @@ export default defineSchema({
   messages: defineTable({ providerId: v.string(), threadId: v.string(), direction: v.union(v.literal("inbound"), v.literal("outbound")), party: v.union(v.literal("customer"), v.literal("courier"), v.literal("support")), from: v.string(), to: v.array(v.string()), subject: v.string(), text: v.string(), hasAttachments: v.boolean(), sentAt: v.number(), deliveryStatus: v.optional(v.string()), caseId: v.optional(v.id("cases")) })
     .index("by_provider_id", ["providerId"]).index("by_thread", ["threadId"]).index("by_case", ["caseId"]),
   cases: defineTable({ customerId: v.optional(v.id("customers")), orderId: v.optional(v.id("orders")), sourceMessageId: v.id("messages"), status: caseStatus, ownerId: v.optional(v.id("users")), escalationReason: v.optional(v.string()), recommendation: v.optional(v.string()), responseDeadlineAt: v.optional(v.number()), identityAttempts: v.number(), firstActionAt: v.optional(v.number()), resolvedAt: v.optional(v.number()), closedAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number() })
-    .index("by_status", ["status"]).index("by_customer_order", ["customerId", "orderId"]).index("by_owner", ["ownerId"]),
+    .index("by_status", ["status"]).index("by_source_message", ["sourceMessageId"]).index("by_customer_order", ["customerId", "orderId"]).index("by_owner", ["ownerId"]),
   caseLinks: defineTable({ caseId: v.id("cases"), linkedCaseId: v.id("cases"), reason: v.string() })
     .index("by_case", ["caseId"]),
   contactAttempts: defineTable({ caseId: v.id("cases"), contactId: v.id("contacts"), attemptNumber: v.number(), messageId: v.optional(v.id("messages")), scheduledAt: v.number(), sentAt: v.optional(v.number()), replyMessageId: v.optional(v.id("messages")) })

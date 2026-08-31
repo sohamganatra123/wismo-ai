@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cases } from "./caseData";
+import LiveCases from "./LiveCases";
 import styles from "./page.module.css";
 
 export const metadata = { title: "Human attention · WISMO" };
@@ -22,6 +23,8 @@ export default function HumanAttentionInbox() {
           <div><p className={styles.eyebrow}>Human attention</p><h1>Three cases need judgment.</h1></div>
           <p>WISMO keeps investigating routine requests. Only blocked or uncertain cases appear here.</p>
         </header>
+
+        <LiveCases />
 
         <section className={styles.queue} aria-labelledby="queue-title">
           <div className={styles.queueHead}>
