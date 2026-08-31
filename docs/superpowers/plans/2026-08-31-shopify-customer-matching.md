@@ -73,3 +73,5 @@
 - [x] Render a pending state, exact-match evidence, or safe no-match state.
 - [x] Run formatting, lint, focused tests, all tests, TypeScript, and the production build.
 - [ ] Deploy Convex and Vercel, then demonstrate a sender that exists in the connected Shopify store.
+
+**Deferred live proof (31 Aug 2026):** Convex and Vercel deployed successfully from commit `b56b2a2`. The remaining real-account check is to send a WISMO email from an address that exactly matches a Shopify customer, poll Gmail, and confirm the inbox shows only that customer's saved active-order evidence. The user chose to run this check later.

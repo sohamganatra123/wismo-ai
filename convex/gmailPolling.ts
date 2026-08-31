@@ -180,6 +180,7 @@ async function poll(ctx: ActionCtx) {
     const result = await ctx.runMutation(internal.gmailData.prepareInbound, {
       providerId: message.providerId,
       threadId: message.threadId,
+      messageIdHeader: message.messageIdHeader,
       from: message.from,
       to: message.to,
       subject: message.subject,

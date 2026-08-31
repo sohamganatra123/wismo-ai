@@ -1,5 +1,10 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
+import { identityRequestDraft } from "./domain/identityRequest";
+
+function senderEmail(from: string) {
+  return from.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase();
+}
 
 export const getMatchInput = internalQuery({
   args: { caseId: v.id("cases") },
@@ -106,7 +111,6 @@ export const recordOutcome = internalMutation({
   args: {
     caseId: v.id("cases"),
     outcome: v.union(
-      v.literal("no_match"),
       v.literal("not_connected"),
       v.literal("shopify_error"),
     ),
@@ -114,19 +118,69 @@ export const recordOutcome = internalMutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    if (args.outcome === "no_match") {
-      await ctx.db.patch(args.caseId, {
-        status: "identity_needed",
-        escalationReason: "Sender did not match a Shopify customer",
-        updatedAt: now,
-      });
-    }
     await ctx.db.insert("events", {
       caseId: args.caseId,
       type: `shopify_match_${args.outcome}`,
       summary: args.detail,
       contextSource: "shopify",
       ...(args.outcome === "shopify_error" ? { error: args.detail } : {}),
+      createdAt: now,
+    });
+  },
+});
+
+export const recordNoMatchAndPrepareIdentityRequest = internalMutation({
+  args: { caseId: v.id("cases"), detail: v.string() },
+  handler: async (ctx, args) => {
+    const item = await ctx.db.get(args.caseId);
+    if (!item) return;
+    const message = await ctx.db.get(item.sourceMessageId);
+    if (!message) return;
+    const recipient = senderEmail(message.from);
+    const now = Date.now();
+    await ctx.db.patch(args.caseId, {
+      status: "identity_needed",
+      escalationReason: "Sender did not match a Shopify customer",
+      updatedAt: now,
+    });
+    if (!recipient) {
+      await ctx.db.insert("events", {
+        caseId: args.caseId,
+        type: "identity_request_unavailable",
+        summary: "The unknown sender has no safe reply address.",
+        contextSource: "gmail",
+        createdAt: now,
+      });
+      return;
+    }
+    const draft = identityRequestDraft({
+      caseId: args.caseId,
+      threadId: message.threadId,
+      messageIdHeader: message.messageIdHeader,
+      recipient,
+      subject: message.subject,
+    });
+    const existing = await ctx.db
+      .query("approvals")
+      .withIndex("by_action_key", (q) => q.eq("actionKey", draft.actionKey))
+      .unique();
+    if (!existing) {
+      await ctx.db.insert("approvals", {
+        caseId: args.caseId,
+        actionKey: draft.actionKey,
+        kind: "customer_email",
+        revision: 1,
+        payload: draft,
+        status: "pending",
+        proposedAt: now,
+      });
+    }
+    await ctx.db.insert("events", {
+      caseId: args.caseId,
+      type: "identity_request_prepared",
+      summary: args.detail,
+      contextSource: "shopify",
+      toolResult: { requestedFields: ["checkout email", "order number"] },
       createdAt: now,
     });
   },

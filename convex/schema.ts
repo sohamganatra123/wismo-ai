@@ -32,7 +32,15 @@ export default defineSchema({
     .index("by_customer", ["customerId"]).index("by_shopify_id", ["shopifyOrderId"]),
   trackingScans: defineTable({ orderId: v.id("orders"), trackingNumber: v.string(), status: v.string(), eventTime: v.string(), location: v.optional(v.string()), description: v.optional(v.string()), source: v.string(), recordedAt: v.number() })
     .index("by_order", ["orderId"]).index("by_tracking", ["trackingNumber"]),
-  messages: defineTable({ providerId: v.string(), threadId: v.string(), direction: v.union(v.literal("inbound"), v.literal("outbound")), party: v.union(v.literal("customer"), v.literal("courier"), v.literal("support")), from: v.string(), to: v.array(v.string()), subject: v.string(), text: v.string(), hasAttachments: v.boolean(), sentAt: v.number(), deliveryStatus: v.optional(v.string()), caseId: v.optional(v.id("cases")) })
+  investigations: defineTable({
+    caseId: v.id("cases"),
+    orderId: v.id("orders"),
+    previousMessages: v.array(v.object({ messageId: v.id("messages"), subject: v.string(), text: v.string(), sentAt: v.number() })),
+    fulfillmentStatus: v.string(),
+    latestTracking: v.optional(v.object({ trackingNumber: v.string(), status: v.string(), eventTime: v.string(), location: v.optional(v.string()), description: v.optional(v.string()) })),
+    collectedAt: v.number(),
+  }).index("by_case", ["caseId"]),
+  messages: defineTable({ providerId: v.string(), threadId: v.string(), messageIdHeader: v.optional(v.string()), direction: v.union(v.literal("inbound"), v.literal("outbound")), party: v.union(v.literal("customer"), v.literal("courier"), v.literal("support")), from: v.string(), to: v.array(v.string()), subject: v.string(), text: v.string(), hasAttachments: v.boolean(), sentAt: v.number(), deliveryStatus: v.optional(v.string()), caseId: v.optional(v.id("cases")) })
     .index("by_provider_id", ["providerId"]).index("by_thread", ["threadId"]).index("by_case", ["caseId"]),
   cases: defineTable({ customerId: v.optional(v.id("customers")), orderId: v.optional(v.id("orders")), sourceMessageId: v.id("messages"), status: caseStatus, ownerId: v.optional(v.id("users")), escalationReason: v.optional(v.string()), recommendation: v.optional(v.string()), responseDeadlineAt: v.optional(v.number()), identityAttempts: v.number(), firstActionAt: v.optional(v.number()), resolvedAt: v.optional(v.number()), closedAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number() })
     .index("by_status", ["status"]).index("by_source_message", ["sourceMessageId"]).index("by_customer_order", ["customerId", "orderId"]).index("by_owner", ["ownerId"]),

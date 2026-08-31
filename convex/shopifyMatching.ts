@@ -54,9 +54,8 @@ export const matchCase = internalAction({
     }
     const email = senderEmail(input.message.from);
     if (!email) {
-      await ctx.runMutation(internal.shopifyData.recordOutcome, {
+      await ctx.runMutation(internal.shopifyData.recordNoMatchAndPrepareIdentityRequest, {
         caseId: args.caseId,
-        outcome: "no_match",
         detail: "The sender address could not be matched safely.",
       });
       return;
@@ -85,9 +84,8 @@ export const matchCase = internalAction({
       if (!response.ok) throw new Error(`Shopify returned ${response.status}`);
       const customer = parseShopifyCustomer(body);
       if (!customer || customer.email !== email) {
-        await ctx.runMutation(internal.shopifyData.recordOutcome, {
+        await ctx.runMutation(internal.shopifyData.recordNoMatchAndPrepareIdentityRequest, {
           caseId: args.caseId,
-          outcome: "no_match",
           detail: `No exact Shopify customer matched ${email}.`,
         });
         return;

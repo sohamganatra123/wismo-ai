@@ -13,25 +13,33 @@ import type * as auth from "../auth.js";
 import type * as crons from "../crons.js";
 import type * as domain_access from "../domain/access.js";
 import type * as domain_approvals from "../domain/approvals.js";
+import type * as domain_customerUpdate from "../domain/customerUpdate.js";
 import type * as domain_fixtures from "../domain/fixtures.js";
 import type * as domain_gmail from "../domain/gmail.js";
+import type * as domain_identityRequest from "../domain/identityRequest.js";
 import type * as domain_inboundClassification from "../domain/inboundClassification.js";
+import type * as domain_investigation from "../domain/investigation.js";
 import type * as domain_oauthState from "../domain/oauthState.js";
 import type * as domain_retries from "../domain/retries.js";
 import type * as domain_shopifyCustomer from "../domain/shopifyCustomer.js";
 import type * as domain_stateMachine from "../domain/stateMachine.js";
 import type * as domain_tracking from "../domain/tracking.js";
 import type * as env from "../env.js";
+import type * as customerUpdates from "../customerUpdates.js";
+import type * as courierReplies from "../courierReplies.js";
 import type * as gmailData from "../gmailData.js";
 import type * as gmailPolling from "../gmailPolling.js";
 import type * as http from "../http.js";
+import type * as identityRequests from "../identityRequests.js";
 import type * as integrationData from "../integrationData.js";
 import type * as integrations from "../integrations.js";
+import type * as investigations from "../investigations.js";
 import type * as security_credentials from "../security/credentials.js";
 import type * as services_contracts from "../services/contracts.js";
 import type * as settings from "../settings.js";
 import type * as shopifyData from "../shopifyData.js";
 import type * as shopifyMatching from "../shopifyMatching.js";
+import type * as shopifyNotes from "../shopifyNotes.js";
 
 import type {
   ApiFromModules,
@@ -45,25 +53,33 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "domain/access": typeof domain_access;
   "domain/approvals": typeof domain_approvals;
+  "domain/customerUpdate": typeof domain_customerUpdate;
   "domain/fixtures": typeof domain_fixtures;
   "domain/gmail": typeof domain_gmail;
+  "domain/identityRequest": typeof domain_identityRequest;
   "domain/inboundClassification": typeof domain_inboundClassification;
+  "domain/investigation": typeof domain_investigation;
   "domain/oauthState": typeof domain_oauthState;
   "domain/retries": typeof domain_retries;
   "domain/shopifyCustomer": typeof domain_shopifyCustomer;
   "domain/stateMachine": typeof domain_stateMachine;
   "domain/tracking": typeof domain_tracking;
   env: typeof env;
+  customerUpdates: typeof customerUpdates;
+  courierReplies: typeof courierReplies;
   gmailData: typeof gmailData;
   gmailPolling: typeof gmailPolling;
   http: typeof http;
+  identityRequests: typeof identityRequests;
   integrationData: typeof integrationData;
   integrations: typeof integrations;
+  investigations: typeof investigations;
   "security/credentials": typeof security_credentials;
   "services/contracts": typeof services_contracts;
   settings: typeof settings;
   shopifyData: typeof shopifyData;
   shopifyMatching: typeof shopifyMatching;
+  shopifyNotes: typeof shopifyNotes;
 }>;
 
 /**

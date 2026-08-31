@@ -41,6 +41,7 @@ export const prepareInbound = internalMutation({
   args: {
     providerId: v.string(),
     threadId: v.string(),
+    messageIdHeader: v.string(),
     from: v.string(),
     to: v.array(v.string()),
     subject: v.string(),
@@ -74,6 +75,7 @@ export const prepareInbound = internalMutation({
       await ctx.db.insert("messages", {
         providerId: args.providerId,
         threadId: args.threadId,
+        messageIdHeader: args.messageIdHeader,
         direction: "inbound",
         party: "customer",
         from: args.from,
@@ -91,6 +93,7 @@ export const prepareInbound = internalMutation({
       const messageId = await ctx.db.insert("messages", {
         providerId: args.providerId,
         threadId: args.threadId,
+        messageIdHeader: args.messageIdHeader,
         direction: "inbound",
         party: "customer",
         from: args.from,
@@ -125,6 +128,7 @@ export const prepareInbound = internalMutation({
     const messageId = await ctx.db.insert("messages", {
       providerId: args.providerId,
       threadId: args.threadId,
+      messageIdHeader: args.messageIdHeader,
       direction: "inbound",
       party: "customer",
       from: args.from,
@@ -216,6 +220,8 @@ export const listReceivedCases = query({
             "investigating",
             "identity_needed",
             "order_needed",
+            "awaiting_approval",
+            "awaiting_courier",
           ] as const
         ).map((status) =>
           ctx.db
@@ -243,6 +249,33 @@ export const listReceivedCases = query({
               )
               .collect()
           : [];
+        const approvals = await ctx.db
+          .query("approvals")
+          .withIndex("by_case", (q) => q.eq("caseId", item._id))
+          .collect();
+        const identityApproval = approvals.find(
+          (approval) =>
+            approval.kind === "customer_email" &&
+            typeof approval.payload?.actionKey === "string" &&
+            approval.payload.actionKey.startsWith("identity-request:"),
+        );
+        const identityPayload = identityApproval?.payload as
+          | { to?: unknown; subject?: unknown; text?: unknown }
+          | undefined;
+        const customerUpdateApproval = approvals.find(
+          (approval) =>
+            approval.kind === "customer_email" &&
+            typeof approval.payload?.actionKey === "string" &&
+            approval.payload.actionKey.startsWith("tracking-update:"),
+        );
+        const customerUpdatePayload = customerUpdateApproval?.payload as
+          | { to?: unknown; subject?: unknown; text?: unknown }
+          | undefined;
+        const shopifyApproval = approvals.find((approval) => approval.kind === "shopify_note");
+        const shopifyPayload = shopifyApproval?.payload as { note?: unknown } | undefined;
+        const contactAttempt = await ctx.db.query("contactAttempts").withIndex("by_case", (q) => q.eq("caseId", item._id)).first();
+        const courierContact = contactAttempt ? await ctx.db.get(contactAttempt.contactId) : null;
+        const courierReply = contactAttempt?.replyMessageId ? await ctx.db.get(contactAttempt.replyMessageId) : null;
         return message
           ? {
               id: item._id,
@@ -268,6 +301,42 @@ export const listReceivedCases = query({
                 trackingNumber: order.trackingNumber,
                 trackingUrl: order.trackingUrl,
               })),
+              identityRequest:
+                identityApproval &&
+                typeof identityPayload?.to === "string" &&
+                typeof identityPayload.subject === "string" &&
+                typeof identityPayload.text === "string"
+                  ? {
+                      approvalId: identityApproval._id,
+                      status: identityApproval.status,
+                      to: identityPayload.to,
+                      subject: identityPayload.subject,
+                      text: identityPayload.text,
+                    }
+                  : null,
+              customerUpdate:
+                customerUpdateApproval &&
+                typeof customerUpdatePayload?.to === "string" &&
+                typeof customerUpdatePayload.subject === "string" &&
+                typeof customerUpdatePayload.text === "string"
+                  ? {
+                      approvalId: customerUpdateApproval._id,
+                      status: customerUpdateApproval.status,
+                      proposedAt: customerUpdateApproval.proposedAt,
+                      to: customerUpdatePayload.to,
+                      subject: customerUpdatePayload.subject,
+                      text: customerUpdatePayload.text,
+                    }
+                  : null,
+              courierState: contactAttempt ? {
+                contactName: courierContact?.name ?? "Courier",
+                waiting: !courierReply,
+                replyText: courierReply?.text ?? null,
+              } : null,
+              shopifyUpdate:
+                shopifyApproval && typeof shopifyPayload?.note === "string"
+                  ? { approvalId: shopifyApproval._id, status: shopifyApproval.status, proposedAt: shopifyApproval.proposedAt, note: shopifyPayload.note }
+                  : null,
             }
           : null;
       }),

@@ -418,6 +418,29 @@
   display: grid;
   gap: 8px;
 }
+
+.identityRequest {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.identityRequest > p,
+.identityRequest section p {
+  margin: 0;
+}
+
+.identityRequest section {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--amber) 8%, transparent);
+}
+
+.identityRequest button {
+  justify-self: start;
+}
 .orderEvidence section {
   display: grid;
   grid-template-columns: minmax(180px, 1.5fr) 1fr 1fr;
@@ -428,6 +451,96 @@
 .orderEvidence section strong {
   font-size: 12px;
   text-transform: capitalize;
+}
+.investigateButton {
+  width: max-content;
+  min-height: 40px !important;
+}
+.investigationResult {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--jade-soft);
+}
+.investigationResult > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.investigationResult > header div,
+.investigationFacts > div {
+  display: grid;
+  gap: 4px;
+}
+.investigationFacts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.investigationFacts > div {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--paper);
+}
+.investigationResult blockquote {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  border-left: 3px solid var(--jade);
+  background: var(--paper);
+}
+.investigationResult blockquote p {
+  color: var(--slate);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.customerUpdate {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--amber) 8%, var(--paper));
+}
+.customerUpdate > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.customerUpdate > header div {
+  display: grid;
+  gap: 5px;
+}
+.customerUpdate > p {
+  color: var(--slate);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.customerUpdate button {
+  width: max-content;
+}
+.courierState,
+.shopifyUpdate {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--control-bg);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+.courierState p {
+  color: var(--slate);
+  font: 600 12px var(--font-data);
+}
+.courierState button,
+.shopifyUpdate button {
+  width: max-content;
+}
+.shopifyUpdate {
+  background: color-mix(in srgb, var(--jade) 7%, var(--paper));
 }
 .receivedList dl {
   display: flex;
