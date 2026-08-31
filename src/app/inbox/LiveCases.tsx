@@ -14,6 +14,17 @@ type ReceivedCase = {
   from: string;
   subject: string;
   text: string;
+  status: "received" | "investigating" | "identity_needed" | "order_needed";
+  customer: { name: string; email: string } | null;
+  orders: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    lineItems: string[];
+    fulfillmentStatus: string;
+    trackingNumber?: string;
+    trackingUrl?: string;
+  }>;
 };
 const listRef = makeFunctionReference<
   "query",
@@ -85,7 +96,7 @@ export default function LiveCases() {
           <p className={styles.eyebrow}>Live intake · Gmail · every minute</p>
           <h2 id="live-cases-title">New from the test inbox</h2>
           <p className={styles.liveDescription}>
-            Original messages waiting for the next WISMO processing step.
+            Original messages with saved Shopify identity and delivery evidence.
           </p>
         </div>
         <button onClick={pollNow} disabled={working}>
@@ -117,6 +128,52 @@ export default function LiveCases() {
               </header>
               <h3>{item.subject}</h3>
               <p>{item.text || "(empty message)"}</p>
+              <div className={styles.shopifyEvidence}>
+                {item.customer ? (
+                  <>
+                    <header>
+                      <div>
+                        <small>Exact Shopify match</small>
+                        <strong>{item.customer.name}</strong>
+                        <span>{item.customer.email}</span>
+                      </div>
+                      <b>{item.orders.length} active</b>
+                    </header>
+                    {item.orders.length ? (
+                      <div className={styles.orderEvidence}>
+                        {item.orders.map((order) => (
+                          <section key={order.id}>
+                            <div>
+                              <strong>{order.name}</strong>
+                              <span>{order.lineItems.join(", ")}</span>
+                            </div>
+                            <div>
+                              <small>Fulfillment</small>
+                              <strong>
+                                {order.fulfillmentStatus.replaceAll("_", " ")}
+                              </strong>
+                            </div>
+                            <div>
+                              <small>Tracking</small>
+                              <strong>
+                                {order.trackingNumber ?? "Not added"}
+                              </strong>
+                            </div>
+                          </section>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>No active Shopify orders found for this customer.</p>
+                    )}
+                  </>
+                ) : item.status === "identity_needed" ? (
+                  <p>
+                    No exact Shopify customer match. No order data was shown.
+                  </p>
+                ) : (
+                  <p>Shopify customer match pending.</p>
+                )}
+              </div>
               <dl>
                 <div>
                   <dt>Gmail conversation ID</dt>

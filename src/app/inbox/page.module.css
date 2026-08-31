@@ -378,6 +378,57 @@
   line-height: 1.55;
   white-space: pre-wrap;
 }
+.shopifyEvidence {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+.shopifyEvidence > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.shopifyEvidence > header div,
+.orderEvidence section > div {
+  display: grid;
+  gap: 4px;
+}
+.shopifyEvidence span {
+  color: var(--slate);
+  font-size: 12px;
+}
+.shopifyEvidence b {
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--jade);
+  background: var(--jade-soft);
+  font: 700 11px var(--font-data);
+  text-transform: uppercase;
+}
+.shopifyEvidence > p {
+  color: var(--slate);
+  font-size: 12px;
+}
+.orderEvidence {
+  display: grid;
+  gap: 8px;
+}
+.orderEvidence section {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) 1fr 1fr;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cloud);
+}
+.orderEvidence section strong {
+  font-size: 12px;
+  text-transform: capitalize;
+}
 .receivedList dl {
   display: flex;
   flex-wrap: wrap;

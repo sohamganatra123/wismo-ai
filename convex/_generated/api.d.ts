@@ -18,6 +18,7 @@ import type * as domain_gmail from "../domain/gmail.js";
 import type * as domain_inboundClassification from "../domain/inboundClassification.js";
 import type * as domain_oauthState from "../domain/oauthState.js";
 import type * as domain_retries from "../domain/retries.js";
+import type * as domain_shopifyCustomer from "../domain/shopifyCustomer.js";
 import type * as domain_stateMachine from "../domain/stateMachine.js";
 import type * as domain_tracking from "../domain/tracking.js";
 import type * as env from "../env.js";
@@ -29,6 +30,8 @@ import type * as integrations from "../integrations.js";
 import type * as security_credentials from "../security/credentials.js";
 import type * as services_contracts from "../services/contracts.js";
 import type * as settings from "../settings.js";
+import type * as shopifyData from "../shopifyData.js";
+import type * as shopifyMatching from "../shopifyMatching.js";
 
 import type {
   ApiFromModules,
@@ -47,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   "domain/inboundClassification": typeof domain_inboundClassification;
   "domain/oauthState": typeof domain_oauthState;
   "domain/retries": typeof domain_retries;
+  "domain/shopifyCustomer": typeof domain_shopifyCustomer;
   "domain/stateMachine": typeof domain_stateMachine;
   "domain/tracking": typeof domain_tracking;
   env: typeof env;
@@ -58,6 +62,8 @@ declare const fullApi: ApiFromModules<{
   "security/credentials": typeof security_credentials;
   "services/contracts": typeof services_contracts;
   settings: typeof settings;
+  shopifyData: typeof shopifyData;
+  shopifyMatching: typeof shopifyMatching;
 }>;
 
 /**

@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const getConnection = internalQuery({
   args: {},
@@ -115,6 +116,9 @@ export const prepareInbound = internalMutation({
         contextSource: "gmail",
         createdAt: now,
       });
+      await ctx.scheduler.runAfter(0, internal.shopifyMatching.matchCase, {
+        caseId,
+      });
       return { action: "created" as const, caseId };
     }
 
@@ -204,14 +208,41 @@ export const listReceivedCases = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .unique();
     if (!profile) return [];
-    const rows = await ctx.db
-      .query("cases")
-      .withIndex("by_status", (q) => q.eq("status", "received"))
-      .order("desc")
-      .take(10);
+    const rows = (
+      await Promise.all(
+        (
+          [
+            "received",
+            "investigating",
+            "identity_needed",
+            "order_needed",
+          ] as const
+        ).map((status) =>
+          ctx.db
+            .query("cases")
+            .withIndex("by_status", (q) => q.eq("status", status))
+            .order("desc")
+            .take(10),
+        ),
+      )
+    )
+      .flat()
+      .sort((left, right) => right.createdAt - left.createdAt)
+      .slice(0, 10);
     return Promise.all(
       rows.map(async (item) => {
         const message = await ctx.db.get(item.sourceMessageId);
+        const customer = item.customerId
+          ? await ctx.db.get(item.customerId)
+          : null;
+        const orders = item.customerId
+          ? await ctx.db
+              .query("orders")
+              .withIndex("by_customer", (q) =>
+                q.eq("customerId", item.customerId!),
+              )
+              .collect()
+          : [];
         return message
           ? {
               id: item._id,
@@ -221,6 +252,22 @@ export const listReceivedCases = query({
               from: message.from,
               subject: message.subject,
               text: message.text,
+              status: item.status,
+              customer: customer
+                ? {
+                    name: customer.name ?? customer.email,
+                    email: customer.email,
+                  }
+                : null,
+              orders: orders.map((order) => ({
+                id: order._id,
+                name: order.name,
+                createdAt: order.createdAt,
+                lineItems: order.lineItems,
+                fulfillmentStatus: order.fulfillmentStatus,
+                trackingNumber: order.trackingNumber,
+                trackingUrl: order.trackingUrl,
+              })),
             }
           : null;
       }),
