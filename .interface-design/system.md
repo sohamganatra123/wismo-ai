@@ -12,6 +12,7 @@ The onboarding signature is the store voice fingerprint: WISMO turns storefront 
 - Store-specific colors belong only inside the voice specimen. They must not recolor the surrounding WISMO interface.
 - Depth uses subtle layered shadows with a quiet one-pixel ring. Avoid glass, gradients, harsh borders, and dramatic elevation.
 - Inputs are inset using the existing cloud-soft family and become amber only for focus.
+- Semantic tokens carry meaning across the product: attention for pending judgment, danger for a conflict or urgent deadline, jade for verified evidence, and muted text only for supporting detail.
 
 ## Hierarchy and type
 
@@ -19,6 +20,7 @@ The onboarding signature is the store voice fingerprint: WISMO turns storefront 
 - Manrope leads headings, Inter carries body and controls, and IBM Plex Mono labels progress, status, and evidence.
 - Use weight, contrast, and space before adding size or color.
 - Large onboarding headings use tight tracking and balanced wrapping. Supporting copy stays around 15px with a generous line height.
+- Operational text has a 12px floor on desktop. Mono eyebrows may use 11px when they are short, uppercase labels rather than instructions.
 
 ## Spacing and shape
 
@@ -33,6 +35,8 @@ The onboarding signature is the store voice fingerprint: WISMO turns storefront 
 - Simulation badge: 22px minimum height, amber-soft fill, 6px radius, 9px/700 mono uppercase text.
 - Step header: 10px mono uppercase eyebrow, 38–64px Manrope heading, 15px supporting copy.
 - Elevated task card: paper fill, 16px radius, quiet ring plus two soft shadow layers.
+- Live intake appears before sample content. Sample and demo data always use an explicit label and quieter visual weight.
+- Interactive controls expose hover, focus, pressed, disabled, working, success, and error states as applicable.
 - Verified step marker: 18px jade circle with a white check. Current step marker uses amber.
 - All simulated external actions need idle, working, success, and error language. Never imply that a real account connected or a real email was delivered.
 - Respect reduced motion; ordinary step changes use opacity and no more than 12px vertical travel over roughly 220ms.
