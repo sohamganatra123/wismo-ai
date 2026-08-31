@@ -40,4 +40,4 @@
 
 - [x] Run lint, tests, typecheck, and production build.
 - [x] Capture desktop inbox and case screenshots and run the hierarchy, signature, token, and squint checks.
-- [ ] Publish and verify the production routes.
+- [x] Publish and verify the production routes.
