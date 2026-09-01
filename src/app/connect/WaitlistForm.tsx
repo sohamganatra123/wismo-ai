@@ -2,8 +2,9 @@
 
 import { makeFunctionReference } from "convex/server";
 import { useMutation } from "convex/react";
+import { track } from "@vercel/analytics";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import styles from "./waitlist.module.css";
 
 const waitlistJoinRef = makeFunctionReference<
@@ -14,12 +15,17 @@ const waitlistJoinRef = makeFunctionReference<
 
 export default function WaitlistForm({ configured }: { configured: boolean }) {
   const joinWaitlist = useMutation(waitlistJoinRef);
-  const [name, setName] = useState("");
-  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const started = useRef(false);
+
+  function markStarted() {
+    if (started.current) return;
+    started.current = true;
+    track("Waitlist Form Started", { field: "work_email" });
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -28,11 +34,13 @@ export default function WaitlistForm({ configured }: { configured: boolean }) {
 
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
       setError("Enter a valid work email.");
+      track("Waitlist Form Error", { reason: "invalid_email" });
       return;
     }
 
     if (!configured) {
       setError("Waitlist storage is not configured yet.");
+      track("Waitlist Form Error", { reason: "storage_unavailable" });
       return;
     }
 
@@ -40,19 +48,17 @@ export default function WaitlistForm({ configured }: { configured: boolean }) {
     try {
       const result = await joinWaitlist({
         email: email.trim(),
-        name: name.trim() || undefined,
-        company: company.trim() || undefined,
       });
+      track("Waitlist Signup Completed", { result: result.status });
       setSuccess(
         result.status === "existing"
           ? "You are already on the waitlist. We saved your latest details."
           : "You are on the waitlist. We’ll reach out when mailbox access opens."
       );
       setEmail("");
-      setName("");
-      setCompany("");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Waitlist signup failed.");
+      track("Waitlist Form Error", { reason: "submission_failed" });
     } finally {
       setWorking(false);
     }
@@ -63,10 +69,11 @@ export default function WaitlistForm({ configured }: { configured: boolean }) {
       <section className={styles.hero}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>Early access</p>
-          <h1>Join the waitlist for mailbox access.</h1>
+          <h1>Join Wismo early access.</h1>
           <p className={styles.lede}>
             WISMO is opening shared support mailbox connections in small batches.
-            Leave your work email and we’ll contact you when your slot is ready.
+            Leave your work email now. We’ll collect company and connection details
+            with you later, before anything is connected.
           </p>
           <div className={styles.notes}>
             <span>Shared Gmail inbox support</span>
@@ -78,45 +85,35 @@ export default function WaitlistForm({ configured }: { configured: boolean }) {
         <form className={styles.form} onSubmit={submit} noValidate>
           <div className={styles.formIntro}>
             <p>Request access</p>
-            <small>We only need enough to follow up.</small>
+            <small>One field. No mailbox connection yet.</small>
           </div>
-          <label>
-            Name
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Avery Morgan"
-              autoComplete="name"
-            />
-          </label>
           <label>
             Work email
             <input
               required
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onFocus={markStarted}
+              onChange={(event) => {
+                markStarted();
+                setEmail(event.target.value);
+              }}
               placeholder="avery@northstar-goods.com"
               autoComplete="email"
             />
           </label>
-          <label>
-            Company
-            <input
-              value={company}
-              onChange={(event) => setCompany(event.target.value)}
-              placeholder="Northstar Goods"
-              autoComplete="organization"
-            />
-          </label>
           <button className={styles.primary} disabled={working}>
-            {working ? "Saving your spot..." : "Join the waitlist"}
+            {working ? "Saving your spot..." : "Join early access"}
           </button>
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
           {success ? <p className={styles.success} role="status">{success}</p> : null}
           <small className={styles.caption}>
-            No spam. We’ll use this only for access updates.
+            We store your work email only for access updates. Reply to any access
+            email to ask for deletion.
           </small>
+          <Link className={styles.safetyLink} href="/#privacy-security">
+            Read the privacy and security boundary
+          </Link>
         </form>
       </section>
 
@@ -128,15 +125,15 @@ export default function WaitlistForm({ configured }: { configured: boolean }) {
         <div className={styles.steps}>
           <article>
             <strong>1. Request access</strong>
-            <p>Share your work email and team name.</p>
+            <p>Share only your work email.</p>
           </article>
           <article>
             <strong>2. We review fit</strong>
-            <p>We’re prioritizing teams with a shared support inbox and live Shopify orders.</p>
+            <p>We’ll ask about your company, shared support inbox, and live Shopify orders.</p>
           </article>
           <article>
             <strong>3. Start onboarding</strong>
-            <p>When your slot opens, you’ll get a direct setup link.</p>
+            <p>We explain permissions and data handling before anything connects.</p>
           </article>
         </div>
         <Link className={styles.back} href="/">

@@ -149,6 +149,18 @@
 
 .caption {
   color: rgba(244, 239, 230, 0.54);
+  line-height: 1.55;
+  text-transform: none;
+  letter-spacing: .04em;
+}
+
+.safetyLink {
+  width: fit-content;
+  color: #f8d49b;
+  font-size: 13px;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .detail {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LandingContent } from "./content";
+import { TrackedCta } from "./TrackedCta";
 import styles from "../page.module.css";
 
 type Props = Pick<LandingContent["hero"], "cta" | "secondaryCta">;
@@ -11,7 +12,9 @@ export function LandingNav({ cta, secondaryCta }: Props) {
       <nav aria-label="Main navigation">
         <Link className={styles.navHow} href="#how-it-works">How it works</Link>
         <Link className={styles.loginCta} href={secondaryCta.href}>{secondaryCta.label}</Link>
-        <Link className={styles.navPrimary} href={cta.href}>{cta.label}<span aria-hidden="true">↗</span></Link>
+        <TrackedCta className={styles.navPrimary} href={cta.href} location="navigation">
+          {cta.label}<span aria-hidden="true">↗</span>
+        </TrackedCta>
       </nav>
     </header>
   );

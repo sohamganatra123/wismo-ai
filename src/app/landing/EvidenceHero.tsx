@@ -1,6 +1,7 @@
 import { getImageProps } from "next/image";
 import Link from "next/link";
 import type { LandingContent } from "./content";
+import { TrackedCta } from "./TrackedCta";
 import styles from "../page.module.css";
 
 export function EvidenceHero({ content }: { content: LandingContent["hero"] }) {
@@ -14,7 +15,9 @@ export function EvidenceHero({ content }: { content: LandingContent["hero"] }) {
         <h1 id="hero-title">{content.headline}</h1>
         <p className={styles.heroBody}>{content.body}</p>
         <div className={styles.heroActions}>
-          <Link className={styles.primaryCta} href={content.cta.href}>{content.cta.label}<span aria-hidden="true">↗</span></Link>
+          <TrackedCta className={styles.primaryCta} href={content.cta.href} location="hero">
+            {content.cta.label}<span aria-hidden="true">↗</span>
+          </TrackedCta>
           <Link className={styles.loginCta} href={content.secondaryCta.href}>{content.secondaryCta.label}</Link>
         </div>
         <small className={styles.heroNote}>{content.note}</small>
