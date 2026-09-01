@@ -2,44 +2,47 @@
 
 ## Direction
 
-WISMO should feel like a calm operations room: safe, grounded, and proof-led. The primary human is a solo store owner or support lead who needs to trust an automated reply before switching it on.
+WISMO should feel like a calm evidence desk: safe, grounded, and proof-led. The primary human is a solo store owner or support lead who needs to brief an agent, watch it work, and choose how much control to give it.
 
-The onboarding signature is the store voice fingerprint: WISMO turns storefront copy, colors, and tone into an editable customer-reply specimen. Product progress should be shown as connected evidence, not celebration.
+The onboarding signature is a continuous cobalt evidence line paired with one persistent WISMO status. The line connects the brief, sources, learned voice, proof events, and final control choice; progress reads as agent activity, not a generic checklist or celebration.
 
 ## Color and surfaces
 
-- Use the existing porcelain canvas, paper surfaces, carbon text, graphite/slate supporting text, amber working state, and jade verified state.
+- Use receipt paper `#F7F4EA`, deep paper `#ECE5D5`, carbon ink `#171714`, soft graphite `#5B594F`, kraft `#CDAE7D`, quiet rules `#D1C8B6`, and cobalt signal `#2457FF`.
 - Store-specific colors belong only inside the voice specimen. They must not recolor the surrounding WISMO interface.
-- Depth uses subtle layered shadows with a quiet one-pixel ring. Avoid glass, gradients, harsh borders, and dramatic elevation.
-- Inputs are inset using the existing cloud-soft family and become amber only for focus.
-- Semantic tokens carry meaning across the product: attention for pending judgment, danger for a conflict or urgent deadline, jade for verified evidence, and muted text only for supporting detail.
+- Depth uses warm surface shifts and quiet one-pixel rules. Avoid generic elevated cards, glass, gradients, harsh borders, and dramatic shadows.
+- Inputs are inset with deep paper and use cobalt focus.
+- Cobalt carries working, verified, current, and selected meaning. Muted red is reserved for errors; text always carries the state as well.
 
 ## Hierarchy and type
 
 - One focal action per step.
-- Manrope leads headings, Inter carries body and controls, and IBM Plex Mono labels progress, status, and evidence.
+- Archivo leads headings, body, and controls. IBM Plex Mono labels progress, status, and evidence.
 - Use weight, contrast, and space before adding size or color.
-- Large onboarding headings use tight tracking and balanced wrapping. Supporting copy stays around 15px with a generous line height.
-- Operational text has a 12px floor on desktop. Mono eyebrows may use 11px when they are short, uppercase labels rather than instructions.
+- Large onboarding headings use 56px desktop / 42px mobile, `-0.03em` tracking, `0.06em` word spacing, and balanced wrapping. Supporting copy is 16px with a generous line height.
+- No user-facing onboarding text is smaller than 12px.
 
 ## Spacing and shape
 
 - Base spacing unit: 8px.
-- Desktop onboarding uses a 280px journey rail and one centered work surface. Below 700px, replace the rail with a compact sticky progress header.
-- Controls are at least 48px high. Radius scale: 8px controls, 12px compact surfaces, 16–20px focal surfaces.
+- Desktop onboarding uses a 296px journey rail above 1200px, 264px at tablet widths, and one centered work surface. Below 768px, replace the rail with a compact sticky progress header.
+- Controls are at least 44px high; primary inputs are 56px and primary actions are 54px. Onboarding surfaces use square manifest edges unless the content itself calls for a physical circular mark.
 - Keep closely related controls tight, then use clear space between sections.
 
 ## Reusable patterns
 
-- Primary button: 52px minimum height, 18px horizontal padding, 9px radius, carbon fill, 13px/750 text, amber arrow, scale to .98 on press.
-- Simulation badge: 22px minimum height, amber-soft fill, 6px radius, 9px/700 mono uppercase text.
-- Step header: 10px mono uppercase eyebrow, 38–64px Manrope heading, 15px supporting copy.
-- Elevated task card: paper fill, 16px radius, quiet ring plus two soft shadow layers.
+- Primary button: 54px minimum height, 18px horizontal padding, square edge, carbon fill, 14px/750 text, cobalt arrow, scale to .985 on press.
+- Guided-setup badge: 24px minimum height, paper fill, cobalt rule, 10px/650 mono uppercase text.
+- Step header: 12px mono uppercase eyebrow, 56/42px Archivo heading, 16px supporting copy.
+- Evidence surface: paper or deep-paper fill with one quiet rule; no large shadow.
 - Live intake appears before sample content. Sample and demo data always use an explicit label and quieter visual weight.
 - Interactive controls expose hover, focus, pressed, disabled, working, success, and error states as applicable.
-- Verified step marker: 18px jade circle with a white check. Current step marker uses amber.
+- Journey map: five visible stages—Brief, Evidence, Voice, Proof, Control. Gmail and Shopify share Evidence while retaining separate retry states.
+- Manifest state: textual CURRENT / VERIFIED / LOCKED with one cobalt line and square numbered markers.
+- Persistent agent status: `Waiting for your brief`, `Waiting for inbox access`, `Checking inbox access`, `Learning from your store`, `Learning your voice`, `Investigating the proof case`, `Needs your decision`, or `Ready for work`.
 - All simulated external actions need idle, working, success, and error language. Never imply that a real account connected or a real email was delivered.
-- Respect reduced motion; ordinary step changes use opacity and no more than 12px vertical travel over roughly 220ms.
+- Control choice: native radio rows for Investigate only, Draft for approval (recommended), and Resolve verified cases; the adjacent summary updates immediately and states that the choice can change later.
+- Respect reduced motion; ordinary step changes use opacity and no more than 8px vertical travel over roughly 210ms. Agent motion loops only while working.
 - Human-attention inbox row: four-column paper surface for customer, reason, recommendation, and deadline; 18px vertical and 20px horizontal padding; 12px radius; deadline uses mono type and carries urgency color.
 - Case-review workspace: evidence and history occupy the main column; the manager decision stays in a 340px sticky side column on wide screens and moves below evidence on smaller screens.
 - Evidence route: three cloud-soft source cards show customer, Shopify order, and newest tracking in source order; jade marks verified evidence and muted red marks a conflict.

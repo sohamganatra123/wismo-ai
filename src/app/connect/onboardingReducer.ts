@@ -33,7 +33,9 @@ export function onboardingReducer(state: OnboardingState, action: OnboardingActi
         : state;
     }
     case "TEST_FAILED": return { ...state, testStatus: "error" };
+    case "AUTONOMY_SELECTED": return { ...state, autonomyMode: action.mode, active: false };
     case "AUTOMATION_ACTIVATED": return state.testStatus === "prepared" ? { ...state, active: true } : state;
+    case "EDIT_AUTONOMY": return state.testStatus === "prepared" ? { ...state, step: "launch", active: false } : state;
     case "GO_BACK": return stepOrder.indexOf(action.step) <= stepOrder.indexOf(furthestStep(state)) ? { ...state, step: action.step } : state;
     case "RESTORED": return { ...initialOnboardingState, ...action.state };
   }

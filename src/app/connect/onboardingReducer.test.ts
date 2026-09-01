@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { onboardingReducer } from "./onboardingReducer";
-import { initialOnboardingState } from "./onboardingTypes";
+import { initialOnboardingState, type OnboardingState } from "./onboardingTypes";
 import { seededVoice } from "./simulatedConnections";
 
 function throughShopify() {
@@ -37,8 +37,19 @@ describe("onboardingReducer", () => {
     expect(onboardingReducer(state, { type: "AUTOMATION_ACTIVATED" }).active).toBe(true);
   });
 
+  it("saves the selected control mode and can return to edit it", () => {
+    let state: OnboardingState = { ...initialOnboardingState, step: "launch", testStatus: "prepared" };
+    expect(state.autonomyMode).toBe("approval");
+    state = onboardingReducer(state, { type: "AUTONOMY_SELECTED", mode: "verified" });
+    expect(state.autonomyMode).toBe("verified");
+    state = onboardingReducer(state, { type: "AUTOMATION_ACTIVATED" });
+    expect(state.active).toBe(true);
+    state = onboardingReducer(state, { type: "EDIT_AUTONOMY" });
+    expect(state).toMatchObject({ step: "launch", active: false, autonomyMode: "verified" });
+  });
+
   it("changing Gmail clears only the proof while changing Shopify clears voice and proof", () => {
-    let state = { ...throughShopify(), voiceAccepted: true, testStatus: "prepared" as const, active: true };
+    let state: OnboardingState = { ...throughShopify(), voiceAccepted: true, testStatus: "prepared", active: true };
     state = onboardingReducer(state, { type: "GO_BACK", step: "gmail" });
     state = onboardingReducer(state, { type: "GMAIL_CONNECT_STARTED" });
     expect(state.testStatus).toBe("idle");
