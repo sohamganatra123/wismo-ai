@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,5 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return <html lang="en"><body className={`${archivo.variable} ${plexMono.variable}`}>{children}</body></html>;
+  return (
+    <html lang="en">
+      <body className={`${archivo.variable} ${plexMono.variable}`}>
+        {children}
+        <Analytics />
+      </body>
+    </html>
+  );
 }
