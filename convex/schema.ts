@@ -20,6 +20,14 @@ export default defineSchema({
     .index("by_user", ["userId"]).index("by_email", ["email"]),
   invites: defineTable({ email: v.string(), role, tokenHash: v.string(), invitedBy: v.id("users"), expiresAt: v.number(), acceptedAt: v.optional(v.number()) })
     .index("by_email", ["email"]).index("by_token", ["tokenHash"]),
+  waitlistLeads: defineTable({
+    email: v.string(),
+    name: v.optional(v.string()),
+    company: v.optional(v.string()),
+    source: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_email", ["email"]),
   integrations: defineTable({ kind: v.union(v.literal("gmail"), v.literal("shopify")), accountLabel: v.string(), encryptedCredentials: v.string(), cursor: v.optional(v.string()), connectedBy: v.id("users"), updatedAt: v.number() })
     .index("by_kind", ["kind"]),
   oauthStates: defineTable({ stateHash: v.string(), userId: v.id("users"), provider: v.literal("gmail"), expiresAt: v.number(), usedAt: v.optional(v.number()) })

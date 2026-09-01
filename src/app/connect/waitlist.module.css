@@ -1,0 +1,212 @@
+.page {
+  min-height: 100dvh;
+  padding: 32px;
+  color: #f4efe6;
+  background:
+    radial-gradient(circle at top left, rgba(196, 137, 71, 0.2), transparent 34%),
+    linear-gradient(135deg, #17120d 0%, #201912 45%, #0f1418 100%);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 420px);
+  gap: 32px;
+  align-items: stretch;
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.copy,
+.form,
+.detail {
+  border: 1px solid rgba(244, 239, 230, 0.14);
+  background: rgba(255, 248, 236, 0.05);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.25);
+}
+
+.copy {
+  padding: clamp(32px, 6vw, 72px);
+}
+
+.eyebrow,
+.kicker,
+.formIntro p,
+.notes span,
+.caption {
+  font-family: var(--font-data);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow,
+.kicker,
+.formIntro p {
+  color: #f2b15a;
+}
+
+.copy h1 {
+  max-width: 9ch;
+  margin-top: 20px;
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 108px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.lede {
+  max-width: 34rem;
+  margin-top: 24px;
+  color: rgba(244, 239, 230, 0.8);
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.55;
+}
+
+.notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.notes span {
+  padding: 10px 12px;
+  color: #f8d49b;
+  background: rgba(242, 177, 90, 0.1);
+  border: 1px solid rgba(242, 177, 90, 0.24);
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  padding: 28px;
+}
+
+.formIntro small,
+.steps p,
+.back,
+.detail h2 {
+  color: rgba(244, 239, 230, 0.76);
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form input {
+  min-height: 54px;
+  padding: 0 14px;
+  color: #fff9ef;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(244, 239, 230, 0.15);
+}
+
+.form input::placeholder {
+  color: rgba(244, 239, 230, 0.38);
+}
+
+.form input:focus {
+  outline: 3px solid rgba(242, 177, 90, 0.2);
+  outline-offset: 2px;
+  border-color: rgba(242, 177, 90, 0.6);
+}
+
+.primary,
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 18px;
+  font-weight: 800;
+}
+
+.primary {
+  color: #17120d;
+  background: #f2b15a;
+  border: 0;
+}
+
+.error,
+.success {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.error {
+  color: #ffb5a7;
+}
+
+.success {
+  color: #bfe8c8;
+}
+
+.caption {
+  color: rgba(244, 239, 230, 0.54);
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 32px;
+  width: min(1120px, 100%);
+  margin: 24px auto 0;
+  padding: 28px;
+}
+
+.detail h2 {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.steps {
+  display: grid;
+  gap: 18px;
+}
+
+.steps article {
+  padding-top: 18px;
+  border-top: 1px solid rgba(244, 239, 230, 0.14);
+}
+
+.steps strong {
+  display: block;
+  font-size: 18px;
+}
+
+.steps p {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.back {
+  width: fit-content;
+  margin-top: 8px;
+  border: 1px solid rgba(244, 239, 230, 0.18);
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 18px;
+  }
+
+  .hero,
+  .detail {
+    grid-template-columns: 1fr;
+  }
+
+  .copy h1 {
+    max-width: 11ch;
+    font-size: clamp(48px, 16vw, 84px);
+  }
+}
