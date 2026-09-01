@@ -43,6 +43,8 @@ body {
   color: var(--carbon);
   background: var(--porcelain);
   font-family: var(--font-body);
+  font-kerning: normal;
+  font-feature-settings: "kern" 1;
   -webkit-font-smoothing: antialiased;
 }
 * {

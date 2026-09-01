@@ -13,6 +13,16 @@ describe("landing content", () => {
     expect(landingContent.hero.secondaryCta.href).toBe("/login");
   });
 
+  it("uses a neutral setup handoff on the public landing page", () => {
+    const landingCopy = JSON.stringify(landingContent).toLowerCase();
+
+    expect(landingContent.hero.note).toContain("Setup takes about 5 minutes");
+    expect(landingContent.finalCta.note).toContain("Setup takes about 5 minutes");
+    expect(landingCopy).not.toContain("simulation");
+    expect(landingContent.hero.note).not.toContain("Google sign-in");
+    expect(landingContent.finalCta.note).not.toContain("Google sign-in");
+  });
+
   it("shows the whole autonomous WISMO journey and honest test result", () => {
     expect(landingContent.journeySteps.map((step) => step.label)).toEqual([
       "RECEIVE", "SCAN", "CHECK COURIER", "REPLY", "RESOLVE",

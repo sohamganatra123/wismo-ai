@@ -44,7 +44,7 @@ export const landingContent: LandingContent = {
     body: "Wismo finds the right order, verifies the newest courier scan, and sends the answer in your brand voice—autonomously after that case type clears your safety gate. V1 keeps manager approval on while that proof is built.",
     cta: { label: "Connect support mailbox", href: "/connect" },
     secondaryCta: { label: "Log in", href: "/login" },
-    note: "Google sign-in · V1 approval mode · Autonomy unlocks by safety gate",
+    note: "Setup takes about 5 minutes · progress stays on this device",
   },
   support: {
     eyebrow: "ONE SMALL EMAIL",
@@ -77,7 +77,7 @@ export const landingContent: LandingContent = {
     body: "Connect the shared support inbox. Wismo finds the order, checks the courier, and completes the reply.",
     cta: { label: "Connect support mailbox", href: "/connect" },
     secondaryCta: { label: "Log in", href: "/login" },
-    note: "Google sign-in opens the connection flow.",
+    note: "Setup takes about 5 minutes · progress stays on this device.",
     safetyNote: "V1 requires manager approval. Autonomous sending unlocks only after the safety gate is met.",
     scopeNote: "Built for Gmail + Shopify WISMO cases. Email only in v1.",
   },
