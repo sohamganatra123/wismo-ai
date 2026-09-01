@@ -21,9 +21,9 @@
   --shadow-card:
     0 0 0 1px rgba(17, 19, 24, 0.05), 0 2px 4px rgba(17, 19, 24, 0.035),
     0 18px 44px rgba(17, 19, 24, 0.055);
-  --font-display: var(--font-manrope), Arial, sans-serif;
-  --font-body: var(--font-inter), Arial, sans-serif;
-  --font-data: var(--font-plex), monospace;
+  --font-display: var(--font-archivo), Arial, sans-serif;
+  --font-body: var(--font-archivo), Arial, sans-serif;
+  --font-data: var(--font-plex-mono), monospace;
   --shadow-raised:
     0 2px 4px rgba(17, 19, 24, 0.04), 0 18px 44px rgba(17, 19, 24, 0.08),
     0 60px 120px rgba(17, 19, 24, 0.08);

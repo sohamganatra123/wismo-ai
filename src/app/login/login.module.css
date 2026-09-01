@@ -1,0 +1,17 @@
+.page { min-height: 100svh; display: grid; place-items: center; padding: 24px; color: #171714; background-color: #a57c4e; background-image: linear-gradient(rgba(165,124,78,.82),rgba(165,124,78,.82)),url('/landing/paper-grain.webp'); font-family: var(--font-archivo),Arial,sans-serif; }
+.label { position: relative; width: min(100%,560px); padding: clamp(32px,7vw,72px); background: #f7f4ea; border: 1px solid #171714; box-shadow: 14px 16px 0 rgba(23,23,20,.27); transform: rotate(-.45deg); }
+.label::after { content: ''; position: absolute; right: 44px; bottom: 38px; width: 115px; height: 52px; opacity: .55; background: repeating-linear-gradient(90deg,#171714 0 3px,transparent 3px 7px); }
+.brand { display: inline-block; margin-bottom: 72px; font-size: 1.15rem; font-weight: 850; letter-spacing: -.05em; }
+.eyebrow { color: #2457ff; font: 600 .67rem/1.4 var(--font-plex-mono),monospace; letter-spacing: .11em; }
+.label h1 { margin-top: 18px; font-size: clamp(3.4rem,10vw,6rem); line-height: .84; letter-spacing: -.07em; }
+.label > p:not(.eyebrow,.error) { max-width: 390px; margin-top: 25px; color: #5b594f; line-height: 1.65; }
+.primary { position: relative; z-index: 1; min-height: 48px; display: inline-flex; align-items: center; justify-content: space-between; gap: 36px; margin-top: 34px; padding: 0 18px; color: white; background: #2457ff; border: 0; box-shadow: 5px 6px 0 rgba(23,23,20,.25); cursor: pointer; font-weight: 750; }
+.primary:hover:not(:disabled),.primary:focus-visible { transform: translateY(-3px); box-shadow: 7px 9px 0 rgba(23,23,20,.24); }
+.primary:disabled { opacity: .62; }
+.secondary { min-height: 44px; display: flex; align-items: center; width: fit-content; margin-top: 24px; background-image: linear-gradient(currentColor,currentColor); background-position: 0 100%; background-repeat: no-repeat; background-size: 0 1px; font-size: .82rem; font-weight: 700; }
+.secondary:hover,.secondary:focus-visible { background-size: 100% 1px; }
+.label small { position: relative; z-index: 1; display: block; max-width: 300px; margin-top: 48px; font: 500 .58rem/1.5 var(--font-plex-mono),monospace; text-transform: uppercase; }
+.error { position: relative; z-index: 1; margin-top: 16px; color: #171714; font: 600 .72rem/1.4 var(--font-plex-mono),monospace; }
+.page :where(a,button):focus-visible { outline: 3px solid #2457ff; outline-offset: 4px; }
+@media(max-width:560px){.page{padding:14px}.label{padding:32px 24px}.brand{margin-bottom:55px}.label::after{right:24px;bottom:24px;width:85px}.primary{width:100%}.label small{max-width:220px}}
+@media(prefers-reduced-motion:reduce){.label{transform:none}}
