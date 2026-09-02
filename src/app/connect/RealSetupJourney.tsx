@@ -266,6 +266,24 @@ function StageFrame({
   );
 }
 
+function AgentNote({
+  label,
+  title,
+  text,
+}: {
+  label: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className={styles.agentNote}>
+      <small>{label}</small>
+      <strong>{title}</strong>
+      <p>{text}</p>
+    </div>
+  );
+}
+
 function SummaryCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <article className={styles.summaryCard}>
@@ -282,6 +300,31 @@ function ChecklistItem({ done, text }: { done: boolean; text: string }) {
       <span>{done ? "✓" : "•"}</span>
       <p>{text}</p>
     </li>
+  );
+}
+
+function FoldoutSection({
+  title,
+  text,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  text: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details className={styles.foldout} open={defaultOpen}>
+      <summary className={styles.foldoutSummary}>
+        <div>
+          <strong>{title}</strong>
+          <p>{text}</p>
+        </div>
+        <span>Open</span>
+      </summary>
+      <div className={styles.foldoutBody}>{children}</div>
+    </details>
   );
 }
 
@@ -303,6 +346,12 @@ function BriefStage({
       title="Set the starting boundary for this workspace."
       text="Choose how much WISMO may do at the start. You can still change this before activation."
     >
+      <AgentNote
+        label="WISMO is waiting for"
+        title="One clear boundary from the founder"
+        text="Pick the starting control level first. Every later decision in setup hangs off this one."
+      />
+
       <div className={styles.missionCard}>
         <div>
           <small>Workspace owner</small>
@@ -384,6 +433,12 @@ function SourcesStage({
       title="Connect the evidence WISMO needs."
       text="Gmail provides the customer question. Shopify provides order facts. Both connections below are live."
     >
+      <AgentNote
+        label="Next action"
+        title="Connect the two sources of truth"
+        text="WISMO only needs the inbox and the store to start reading cases. Everything else can stay compact."
+      />
+
       <div className={styles.summaryGrid}>
         <SummaryCard
           label="Gmail"
@@ -429,6 +484,12 @@ function LearnStage({
       title="Fill in the human rules around the agent."
       text="This stage uses founder-owned setup details so WISMO knows who to escalate to and what guidance should repeat."
     >
+      <AgentNote
+        label="WISMO readout"
+        title={ready ? "The operating brief is complete." : "Two founder inputs are still missing."}
+        text={ready ? "Contacts and repeatable guidance are saved. Team access is optional for now." : "Add one courier contact and one reusable rule. The extra details stay folded away until you need them."}
+      />
+
       <div className={styles.summaryGrid}>
         <SummaryCard
           label="Courier contacts"
@@ -448,25 +509,25 @@ function LearnStage({
       </div>
 
       <div className={styles.sectionStack}>
-        <SetupSection title="Team access" text="Invite one support agent if someone else will review approvals.">
+        <FoldoutSection title="Invite a teammate" text="Optional. Use this if someone else will approve cases.">
           <InviteForm />
-        </SetupSection>
+        </FoldoutSection>
 
-        <SetupSection title="Courier contacts" text="These are used when order records are not enough.">
+        <FoldoutSection title="Add a courier contact" text="Required. WISMO needs one escalation contact when order facts are not enough." defaultOpen={settings.contacts.length === 0}>
           <ContactForm />
           <ItemList
             items={settings.contacts.map((item) => ({ title: item.name, detail: `${item.type} · ${item.email}` }))}
             empty="No courier or vendor contacts yet."
           />
-        </SetupSection>
+        </FoldoutSection>
 
-        <SetupSection title="Reusable rules" text="Founder guidance that can be reused later.">
+        <FoldoutSection title="Add one reusable rule" text="Required. Save the rule you want WISMO to follow on repeat cases." defaultOpen={settings.rules.length === 0}>
           <RuleForm />
           <ItemList
             items={settings.rules.map((item) => ({ title: item.title, detail: item.guidance }))}
             empty="No reusable rules yet."
           />
-        </SetupSection>
+        </FoldoutSection>
       </div>
 
       {!ready ? (
@@ -512,6 +573,12 @@ function ReviewStage({
       title="Check the workspace before activation."
       text="This is the final founder check: connected sources, saved guidance, and any memory proposals that still need a decision."
     >
+      <AgentNote
+        label="Final check"
+        title={clearToContinue ? "The founder checklist is clear." : "One approval queue is still open."}
+        text={clearToContinue ? "Review the saved boundary once, then activate. No need to read through every form again." : "A memory proposal still needs a founder decision before activation can unlock."}
+      />
+
       <div className={styles.summaryGrid}>
         <SummaryCard
           label="Starting mode"
@@ -539,9 +606,11 @@ function ReviewStage({
         </ul>
       </div>
 
-      <SetupSection title="Memory review" text="Approve or reject founder-visible memory proposals before activation.">
-        <MemoryReviewList memories={pendingMemories} />
-      </SetupSection>
+      {pendingMemories.length > 0 ? (
+        <FoldoutSection title="Review pending memory" text="Only open this when WISMO proposed reusable guidance.">
+          <MemoryReviewList memories={pendingMemories} />
+        </FoldoutSection>
+      ) : null}
 
       <label className={styles.checkpoint}>
         <input
@@ -624,6 +693,12 @@ function ActivateStage({
       title="Mark the founder setup complete."
       text="This final step stores the completion state on this device and opens the inbox with the boundary you selected earlier."
     >
+      <AgentNote
+        label="Activation"
+        title="Finish setup and open the inbox"
+        text="This stores the founder boundary on this device and hands you straight to the live case view."
+      />
+
       <div className={styles.summaryGrid}>
         <SummaryCard label="WISMO may" value={selected.alone} detail="This is the most WISMO should attempt at the start." />
         <SummaryCard label="Human control" value={selected.approval} detail="Anything outside this stays with a manager." />
@@ -649,18 +724,6 @@ function ActivateStage({
         </button>
       </div>
     </StageFrame>
-  );
-}
-
-function SetupSection({ title, text, children }: { title: string; text: string; children: ReactNode }) {
-  return (
-    <section className={styles.setupSection}>
-      <header className={styles.setupSectionHeader}>
-        <h3>{title}</h3>
-        <p>{text}</p>
-      </header>
-      {children}
-    </section>
   );
 }
 

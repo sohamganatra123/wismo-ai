@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import WaitlistForm from "./WaitlistForm";
 
 export const metadata: Metadata = {
@@ -7,6 +8,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/connect" },
 };
 
-export default function ConnectMailboxPage() {
+export default async function ConnectMailboxPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ gmail?: string; reason?: string }>;
+}) {
+  const params = await searchParams;
+  const query = new URLSearchParams();
+  if (params.gmail) query.set("gmail", params.gmail);
+  if (params.reason) query.set("reason", params.reason);
+  if (query.size > 0) redirect(`/setup?${query.toString()}`);
   return <WaitlistForm configured={Boolean(process.env.NEXT_PUBLIC_CONVEX_URL)} />;
 }
