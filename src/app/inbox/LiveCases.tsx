@@ -93,6 +93,7 @@ const pollRef = makeFunctionReference<
   Record<string, never>,
   {
     created: number;
+    responded: number;
     clarified: number;
     ignored: number;
     checked: number;
@@ -146,7 +147,7 @@ export default function LiveCases() {
           ? "Connect Gmail in founder setup first."
           : result.status === "cursor_reset"
             ? "Gmail history was reset. Send a new test email, then poll again."
-            : `${result.created} new case${result.created === 1 ? "" : "s"}, ${result.clarified} clarification repl${result.clarified === 1 ? "y" : "ies"}, and ${result.ignored} unrelated message${result.ignored === 1 ? "" : "s"} ignored from ${result.checked} checked message${result.checked === 1 ? "" : "s"}.`,
+            : `${result.responded} status repl${result.responded === 1 ? "y" : "ies"}, ${result.clarified} clarification repl${result.clarified === 1 ? "y" : "ies"}, and ${result.ignored} unrelated message${result.ignored === 1 ? "" : "s"} ignored from ${result.checked} checked message${result.checked === 1 ? "" : "s"}.`,
       );
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Gmail poll failed");

@@ -62,9 +62,10 @@ function base64Url(value: string) {
     .replace(/=+$/, "");
 }
 
-async function sendClarification(
+async function sendReply(
   token: string,
   message: ReturnType<typeof normalizeGmailMessage>,
+  text: string,
 ) {
   const to = replyAddress(message.from);
   const subject = replySubject(message.subject);
@@ -88,13 +89,13 @@ async function sendClarification(
       },
       body: JSON.stringify({
         threadId: message.threadId,
-        raw: base64Url(`${headers.join("\r\n")}\r\n\r\n${CLARIFICATION_TEXT}`),
+        raw: base64Url(`${headers.join("\r\n")}\r\n\r\n${text}`),
       }),
     },
   );
   const result = (await response.json()) as { id?: string; threadId?: string };
   if (!response.ok || !result.id) {
-    throw new Error("Gmail clarification reply failed");
+    throw new Error("Gmail reply failed");
   }
   return {
     providerId: result.id,
@@ -109,6 +110,7 @@ async function poll(ctx: ActionCtx) {
   if (!connection?.cursor)
     return {
       created: 0,
+      responded: 0,
       clarified: 0,
       ignored: 0,
       checked: 0,
@@ -145,6 +147,7 @@ async function poll(ctx: ActionCtx) {
       });
       return {
         created: 0,
+        responded: 0,
         clarified: 0,
         ignored: 0,
         checked: 0,
@@ -164,6 +167,7 @@ async function poll(ctx: ActionCtx) {
     pageToken = history.nextPageToken;
   } while (pageToken);
   let created = 0;
+  let responded = 0;
   let clarified = 0;
   let ignored = 0;
   for (const id of ids) {
@@ -189,10 +193,10 @@ async function poll(ctx: ActionCtx) {
       sentAt: message.sentAt,
       classification,
     });
-    if (result.action === "created") created += 1;
+    if (result.action === "clarification" || result.action === "status_reply") created += 1;
     if (result.action === "ignored") ignored += 1;
     if (result.action === "clarification") {
-      const sent = await sendClarification(token, message);
+      const sent = await sendReply(token, message, CLARIFICATION_TEXT);
       await ctx.runMutation(internal.gmailData.completeClarification, {
         caseId: result.caseId,
         providerId: sent.providerId,
@@ -204,6 +208,20 @@ async function poll(ctx: ActionCtx) {
       });
       clarified += 1;
     }
+    if (result.action === "status_reply") {
+      const sent = await sendReply(token, message, result.text);
+      await ctx.runMutation(internal.gmailData.completeStatusReply, {
+        caseId: result.caseId,
+        providerId: sent.providerId,
+        threadId: sent.threadId,
+        from: connection.accountLabel,
+        to: sent.to,
+        subject: sent.subject,
+        text: result.text,
+        orderId: result.orderId,
+      });
+      responded += 1;
+    }
   }
   await ctx.runMutation(internal.gmailData.advanceCursor, {
     integrationId: connection._id,
@@ -211,6 +229,7 @@ async function poll(ctx: ActionCtx) {
   });
   return {
     created,
+    responded,
     clarified,
     ignored,
     checked: ids.size,

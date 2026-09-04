@@ -1,7 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { recordCaseEvent } from "./lib/caseEvents";
 
 export const getConnection = internalQuery({
@@ -37,6 +36,24 @@ const classification = v.union(
   v.literal("clarification"),
   v.literal("unrelated"),
 );
+
+function senderEmail(from: string) {
+  return from.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase();
+}
+
+function orderReference(subject: string, text: string) {
+  return `${subject}\n${text}`.match(/(?:order\s*(?:number|no\.?|id)?\s*[:#]?|#)\s*([a-z0-9-]{3,})/i)?.[1]?.toUpperCase();
+}
+
+function statusReply(order: {
+  orderId: string; customerName: string; status: string; trackingNumber?: string;
+  carrier?: string; statusUpdatedAt: string;
+}) {
+  const firstName = order.customerName.trim().split(/\s+/)[0] || "there";
+  const carrier = order.carrier ? ` with ${order.carrier}` : "";
+  const tracking = order.trackingNumber ? `\nTracking number: ${order.trackingNumber}` : "";
+  return `Hi ${firstName},\n\nOrder #${order.orderId} is ${order.status.toLowerCase()}${carrier}.${tracking}\n\nThis status was updated ${new Date(order.statusUpdatedAt).toLocaleString("en", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC.\n\nWISMO`;
+}
 
 export const prepareInbound = internalMutation({
   args: {
@@ -119,10 +136,45 @@ export const prepareInbound = internalMutation({
         summary: `Received Gmail message “${args.subject}”`,
         contextSource: "gmail",
       });
-      await ctx.scheduler.runAfter(0, internal.shopifyMatching.matchCase, {
+      const activeImport = await ctx.db
+        .query("orderImports")
+        .withIndex("by_active", (q) => q.eq("active", true))
+        .unique();
+      const email = senderEmail(args.from);
+      const reference = orderReference(args.subject, args.text);
+      const candidates = activeImport && email
+        ? await ctx.db.query("csvOrders").withIndex("by_import_email", (q) => q.eq("importId", activeImport._id).eq("customerEmail", email)).collect()
+        : [];
+      const matches = reference ? candidates.filter((order) => order.orderId === reference) : candidates;
+      const order = matches.length === 1 ? matches[0] : null;
+      const fresh = order && Date.now() - Date.parse(order.statusUpdatedAt) <= 24 * 60 * 60 * 1_000 && Date.parse(order.statusUpdatedAt) <= Date.now();
+      if (!order || !fresh) {
+        await ctx.db.patch(caseId, { status: "order_needed", updatedAt: Date.now() });
+        await recordCaseEvent(ctx, {
+          caseId,
+          type: order ? "csv_order_stale" : "csv_order_clarification_needed",
+          summary: order
+            ? "The matching CSV status is older than 24 hours."
+            : "No single CSV order safely matched the sender and order reference.",
+          contextSource: "orders.csv",
+        });
+        return { action: "clarification" as const, caseId };
+      }
+      await ctx.db.patch(caseId, { status: "investigating", updatedAt: Date.now() });
+      await recordCaseEvent(ctx, {
         caseId,
+        type: "csv_order_matched",
+        summary: `Matched order #${order.orderId} from the active CSV snapshot.`,
+        contextSource: "orders.csv",
+        toolName: "find_orders",
+        toolResult: { orderId: order.orderId, statusUpdatedAt: order.statusUpdatedAt },
       });
-      return { action: "created" as const, caseId };
+      return {
+        action: "status_reply" as const,
+        caseId,
+        text: statusReply(order),
+        orderId: order.orderId,
+      };
     }
 
     const messageId = await ctx.db.insert("messages", {
@@ -197,6 +249,34 @@ export const completeClarification = internalMutation({
       contextSource: "gmail",
     });
     await ctx.db.patch(args.caseId, { firstActionAt: now, updatedAt: now });
+  },
+});
+
+export const completeStatusReply = internalMutation({
+  args: {
+    caseId: v.id("cases"), providerId: v.string(), threadId: v.string(),
+    from: v.string(), to: v.string(), subject: v.string(), text: v.string(),
+    orderId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.query("messages").withIndex("by_provider_id", (q) => q.eq("providerId", args.providerId)).unique();
+    if (existing) return;
+    const now = Date.now();
+    await ctx.db.insert("messages", {
+      providerId: args.providerId, threadId: args.threadId, direction: "outbound",
+      party: "support", from: args.from, to: [args.to], subject: args.subject,
+      text: args.text, hasAttachments: false, sentAt: now, deliveryStatus: "sent",
+      caseId: args.caseId,
+    });
+    await ctx.db.patch(args.caseId, { status: "closed", firstActionAt: now, resolvedAt: now, closedAt: now, updatedAt: now });
+    await recordCaseEvent(ctx, {
+      caseId: args.caseId,
+      type: "csv_status_reply_sent",
+      summary: `Sent the current CSV status for order #${args.orderId}.`,
+      contextSource: "gmail,orders.csv",
+      toolName: "gmail.messages.send",
+      toolResult: { providerId: args.providerId, orderId: args.orderId },
+    });
   },
 });
 

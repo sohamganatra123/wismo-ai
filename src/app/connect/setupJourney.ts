@@ -14,7 +14,7 @@ export type SetupStageState = "locked" | "current" | "done";
 export type SetupProgressInput = {
   briefConfirmed: boolean;
   gmailConnected: boolean;
-  shopifyConnected: boolean;
+  ordersLoaded: boolean;
   contactCount: number;
   ruleCount: number;
   pendingMemoryCount: number;
@@ -40,7 +40,7 @@ export type SetupDraft = {
 
 export const setupStages: SetupStage[] = [
   { id: "brief", number: "01", label: "Brief", hint: "Set the operating boundary" },
-  { id: "sources", number: "02", label: "Sources", hint: "Connect Gmail and optional Shopify" },
+  { id: "sources", number: "02", label: "Sources", hint: "Connect Gmail and load orders" },
   { id: "learn", number: "03", label: "Learn", hint: "Add team rules and contacts" },
   { id: "review", number: "04", label: "Review", hint: "Check readiness and memory" },
   { id: "activate", number: "05", label: "Activate", hint: "Turn on the workspace" },
@@ -59,7 +59,7 @@ export function deriveSetupProgress(input: SetupProgressInput): SetupProgress {
   const pendingMemoryCount = Math.max(0, input.pendingMemoryCount);
 
   const briefDone = input.briefConfirmed;
-  const sourcesDone = briefDone && input.gmailConnected;
+  const sourcesDone = briefDone && input.gmailConnected && input.ordersLoaded;
   const learnDone = sourcesDone && contactCount > 0 && ruleCount > 0;
   const reviewDone = learnDone && pendingMemoryCount === 0 && input.reviewConfirmed;
   const activated = reviewDone && input.activated;

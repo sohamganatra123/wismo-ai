@@ -62,6 +62,12 @@ export default defineSchema({
   }).index("by_email", ["email"]),
   integrations: defineTable({ kind: v.union(v.literal("gmail"), v.literal("shopify")), accountLabel: v.string(), encryptedCredentials: v.string(), cursor: v.optional(v.string()), connectedBy: v.id("users"), updatedAt: v.number() })
     .index("by_kind", ["kind"]),
+  orderImports: defineTable({ filename: v.string(), rowCount: v.number(), active: v.boolean(), importedBy: v.id("users"), importedAt: v.number() })
+    .index("by_active", ["active"]),
+  csvOrders: defineTable({ importId: v.id("orderImports"), orderId: v.string(), customerEmail: v.string(), customerName: v.string(), status: v.string(), trackingNumber: v.optional(v.string()), carrier: v.optional(v.string()), statusUpdatedAt: v.string(), lineItems: v.array(v.string()) })
+    .index("by_import", ["importId"])
+    .index("by_import_email", ["importId", "customerEmail"])
+    .index("by_import_order", ["importId", "orderId"]),
   oauthStates: defineTable({ stateHash: v.string(), userId: v.id("users"), provider: v.literal("gmail"), expiresAt: v.number(), usedAt: v.optional(v.number()) })
     .index("by_state_hash", ["stateHash"]),
   contacts: defineTable({ name: v.string(), email: v.string(), type: v.union(v.literal("courier"), v.literal("vendor")), active: v.boolean(), createdBy: v.id("users") })

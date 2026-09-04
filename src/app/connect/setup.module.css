@@ -742,7 +742,20 @@
   line-height: 1.55;
 }
 
+.connection > code {
+  display: block;
+  margin: -10px 0 18px;
+  padding: 10px;
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  color: var(--slate);
+  background: color-mix(in srgb, var(--paper) 82%, var(--carbon));
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .connection button,
+.connection .uploadButton,
 .form > button,
 .result button,
 .inlineActions button {
@@ -755,6 +768,25 @@
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.connection .uploadButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.connection .uploadButton input {
+  position: absolute;
+  width: 1px;
+  min-height: 0;
+  height: 1px;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .connection button:disabled,

@@ -10,7 +10,7 @@ describe("setupJourney", () => {
     const progress = deriveSetupProgress({
       briefConfirmed: false,
       gmailConnected: false,
-      shopifyConnected: false,
+      ordersLoaded: false,
       contactCount: 0,
       ruleCount: 0,
       pendingMemoryCount: 0,
@@ -32,7 +32,7 @@ describe("setupJourney", () => {
     const progress = deriveSetupProgress({
       briefConfirmed: true,
       gmailConnected: true,
-      shopifyConnected: true,
+      ordersLoaded: true,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 0,
@@ -50,11 +50,11 @@ describe("setupJourney", () => {
     expect(firstIncompleteStage(progress)).toBe("activate");
   });
 
-  it("lets the flow continue without Shopify in this build", () => {
+  it("lets the flow continue without Shopify when CSV orders are loaded", () => {
     const progress = deriveSetupProgress({
       briefConfirmed: true,
       gmailConnected: true,
-      shopifyConnected: false,
+      ordersLoaded: true,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 0,
@@ -72,7 +72,7 @@ describe("setupJourney", () => {
     const progress = deriveSetupProgress({
       briefConfirmed: true,
       gmailConnected: true,
-      shopifyConnected: true,
+      ordersLoaded: true,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 2,

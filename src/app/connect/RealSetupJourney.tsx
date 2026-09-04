@@ -22,6 +22,7 @@ import {
   type SetupStageId,
 } from "./setupJourney";
 import { loadSetupDraft, saveSetupDraft } from "./setupStorage";
+import { parseOrdersCsv, type OrderRecord } from "@/prototype/orders";
 import styles from "./setup.module.css";
 
 type Profile = { email: string; name: string; role: "founder" | "support_agent" };
@@ -38,13 +39,15 @@ type Memory = {
   proposedByName: string;
   createdAt: number;
 };
+type OrderImportStatus = { id: string; filename: string; rowCount: number; importedAt: number };
 
 const profileRef = makeFunctionReference<"query", Record<string, never>, Profile | null>("access:currentProfile");
 const integrationsRef = makeFunctionReference<"query", Record<string, never>, Integration[]>("integrationData:getFounderIntegrationStatus");
 const settingsRef = makeFunctionReference<"query", Record<string, never>, Settings>("settings:getFounderSettings");
 const memoriesRef = makeFunctionReference<"query", Record<string, never>, Memory[]>("memories:listFounderMemories");
 const gmailRef = makeFunctionReference<"action", Record<string, never>, string>("integrations:beginGmailConnection");
-const shopifyRef = makeFunctionReference<"action", { shopDomain: string; accessToken: string }, { accountLabel: string; storeName: string }>("integrations:connectShopify");
+const orderImportStatusRef = makeFunctionReference<"query", Record<string, never>, OrderImportStatus | null>("orderImports:getStatus");
+const replaceOrdersRef = makeFunctionReference<"mutation", { filename: string; rows: OrderRecord[] }, { importId: string; rowCount: number }>("orderImports:replace");
 const inviteRef = makeFunctionReference<"action", { email: string }, { token: string; expiresAt: number }>("access:createInvite");
 const contactRef = makeFunctionReference<"mutation", { name: string; email: string; type: "courier" | "vendor" }, string>("settings:addContact");
 const ruleRef = makeFunctionReference<"mutation", { title: string; guidance: string }, string>("settings:addRule");
@@ -92,6 +95,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
   const integrations = useQuery(integrationsRef, {});
   const settings = useQuery(settingsRef, {});
   const memories = useQuery(memoriesRef, {});
+  const orderImport = useQuery(orderImportStatusRef, {});
   const [draft, setDraft] = useState<SetupDraft>(() => loadSetupDraft());
   const [selectedStage, setSelectedStage] = useState<SetupStageId>("brief");
   const currentIntegrations = integrations ?? [];
@@ -103,12 +107,11 @@ function FounderSetup({ profile }: { profile: Profile }) {
   }, [draft]);
 
   const gmailIntegration = currentIntegrations.find((item) => item.kind === "gmail");
-  const shopifyIntegration = currentIntegrations.find((item) => item.kind === "shopify");
   const pendingMemories = currentMemories.filter((memory) => memory.status === "proposed");
   const progress = deriveSetupProgress({
     briefConfirmed: draft.briefConfirmed,
     gmailConnected: Boolean(gmailIntegration),
-    shopifyConnected: Boolean(shopifyIntegration),
+    ordersLoaded: Boolean(orderImport),
     contactCount: currentSettings.contacts.length,
     ruleCount: currentSettings.rules.length,
     pendingMemoryCount: pendingMemories.length,
@@ -126,7 +129,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
       ? { tone: "error" as const, text: gmailReason ?? "Gmail connection failed." }
       : null;
 
-  if (integrations === undefined || settings === undefined || memories === undefined) {
+  if (integrations === undefined || settings === undefined || memories === undefined || orderImport === undefined) {
     return <Loading text="Loading your setup workspace…" />;
   }
 
@@ -169,7 +172,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
         <div className={styles.railCard}>
           <small>Release boundary</small>
           <strong>Manager-controlled actions</strong>
-          <p>Customer sends and Shopify writes still stay behind approvals in this build.</p>
+          <p>Fresh order-status replies can send automatically. Higher-risk actions still wait for approval.</p>
         </div>
         <SignOut />
       </aside>
@@ -179,8 +182,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
           <p className={styles.eyebrow}>Setup control room</p>
           <h1>Move through the founder setup in order.</h1>
           <p>
-            This path uses the real Gmail and Shopify connection actions that exist today,
-            then turns the remaining founder settings into a clear handoff before you open the inbox.
+            Connect Gmail, load a current orders CSV, then set the founder rules before opening the inbox.
           </p>
         </header>
 
@@ -203,7 +205,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
         {visibleStage === "sources" ? (
           <SourcesStage
             gmailIntegration={gmailIntegration}
-            shopifyIntegration={shopifyIntegration}
+            orderImport={orderImport}
             onContinue={() => setSelectedStage("learn")}
           />
         ) : null}
@@ -231,7 +233,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
           <ActivateStage
             draft={draft}
             gmailIntegration={gmailIntegration}
-            shopifyIntegration={shopifyIntegration}
+            orderImport={orderImport}
             settings={currentSettings}
             onDraftChange={setDraft}
           />
@@ -417,26 +419,26 @@ function BriefStage({
 
 function SourcesStage({
   gmailIntegration,
-  shopifyIntegration,
+  orderImport,
   onContinue,
 }: {
   gmailIntegration?: Integration;
-  shopifyIntegration?: Integration;
+  orderImport: OrderImportStatus | null;
   onContinue: () => void;
 }) {
-  const ready = Boolean(gmailIntegration);
+  const ready = Boolean(gmailIntegration && orderImport);
 
   return (
     <StageFrame
       number="02"
       eyebrow="Sources"
       title="Connect the evidence WISMO needs."
-      text="Gmail is required for this build. Shopify can be added now or later if you want store facts in the same workspace."
+      text="Connect Gmail, then upload the current order snapshot WISMO will use for replies."
     >
       <AgentNote
         label="Next action"
-        title="Connect the inbox first"
-        text="WISMO needs Gmail to start reading cases. Shopify is optional in this build, so it should not block setup."
+        title="Connect the inbox and load orders"
+        text="Both sources must be ready before WISMO can answer a delivery question safely."
       />
 
       <div className={styles.summaryGrid}>
@@ -446,15 +448,15 @@ function SourcesStage({
           detail={gmailIntegration?.accountLabel ?? "Read the shared support inbox and prepare approved drafts."}
         />
         <SummaryCard
-          label="Shopify"
-          value={shopifyIntegration ? "Connected" : "Optional"}
-          detail={shopifyIntegration?.accountLabel ?? "Optional for now. Add the store's real .myshopify.com domain and admin token when you want order facts here too."}
+          label="Orders CSV"
+          value={orderImport ? `${orderImport.rowCount} loaded` : "Required"}
+          detail={orderImport ? `${orderImport.filename} · imported ${new Date(orderImport.importedAt).toLocaleString()}` : "Upload a fresh order snapshot with customer, status, and tracking fields."}
         />
       </div>
 
       <div className={styles.cardsGrid}>
         <GmailCard integration={gmailIntegration} />
-        <ShopifyCard integration={shopifyIntegration} />
+        <OrderCsvCard orderImport={orderImport} />
       </div>
 
       <div className={styles.stageActions}>
@@ -641,13 +643,13 @@ function ReviewStage({
 function ActivateStage({
   draft,
   gmailIntegration,
-  shopifyIntegration,
+  orderImport,
   settings,
   onDraftChange,
 }: {
   draft: SetupDraft;
   gmailIntegration?: Integration;
-  shopifyIntegration?: Integration;
+  orderImport: OrderImportStatus | null;
   settings: Settings;
   onDraftChange: Dispatch<SetStateAction<SetupDraft>>;
 }) {
@@ -667,7 +669,7 @@ function ActivateStage({
           <dl className={styles.receiptGrid}>
             <div><dt>Mode</dt><dd>{selected.label}</dd></div>
             <div><dt>Inbox</dt><dd>{gmailIntegration?.accountLabel ?? "Missing"}</dd></div>
-            <div><dt>Store</dt><dd>{shopifyIntegration?.accountLabel ?? "Missing"}</dd></div>
+            <div><dt>Orders</dt><dd>{orderImport ? `${orderImport.rowCount} loaded` : "Missing"}</dd></div>
             <div><dt>Contacts</dt><dd>{settings.contacts.length}</dd></div>
             <div><dt>Rules</dt><dd>{settings.rules.length}</dd></div>
           </dl>
@@ -763,7 +765,7 @@ function SignIn() {
           <span>→</span>
         </button>
         {error ? <p className={styles.error}>{error}</p> : null}
-        <small>Customer and courier messages, and Shopify changes, always wait for manager approval in V1.</small>
+        <small>WISMO only sends automatic order-status replies when one fresh CSV order matches safely.</small>
       </section>
     </main>
   );
@@ -797,23 +799,22 @@ function GmailCard({ integration }: { integration?: Integration }) {
   );
 }
 
-function ShopifyCard({ integration }: { integration?: Integration }) {
-  const connect = useAction(shopifyRef);
-  const [domain, setDomain] = useState("");
-  const [token, setToken] = useState("");
+function OrderCsvCard({ orderImport }: { orderImport: OrderImportStatus | null }) {
+  const replaceOrders = useMutation(replaceOrdersRef);
   const [working, setWorking] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function upload(file: File | undefined) {
+    if (!file) return;
     setWorking(true);
     setFeedback("");
     try {
-      const result = await connect({ shopDomain: domain, accessToken: token });
-      setFeedback(`Connected ${result.storeName}.`);
-      setToken("");
+      const parsed = parseOrdersCsv(await file.text());
+      if (!parsed.ok) throw new Error(parsed.errors.join(" "));
+      const result = await replaceOrders({ filename: file.name, rows: parsed.orders });
+      setFeedback(`${result.rowCount} orders loaded. New Gmail cases now use this snapshot.`);
     } catch (reason) {
-      setFeedback(message(reason, "Shopify connection failed"));
+      setFeedback(message(reason, "The order file could not be loaded"));
     } finally {
       setWorking(false);
     }
@@ -821,17 +822,21 @@ function ShopifyCard({ integration }: { integration?: Integration }) {
 
   return (
     <article className={styles.connection}>
-      <Service icon="S" kind="shopify" label="Order source" name="Shopify" connected={Boolean(integration)} disconnectedLabel="Optional" />
-      <p>{integration?.accountLabel ?? "Optional for this build. Use a founder-created Shopify custom-app token when you want order facts in the workspace."}</p>
-      <form onSubmit={submit}>
-        <Field label=".myshopify.com domain">
-          <input required value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="northstar-goods.myshopify.com" />
-        </Field>
-        <Field label="Admin API access token">
-          <input required type="password" value={token} onChange={(event) => setToken(event.target.value)} autoComplete="off" placeholder="shpat_…" />
-        </Field>
-        <button disabled={working}>{working ? "Checking Shopify…" : integration ? "Replace connection" : "Connect Shopify"}</button>
-      </form>
+      <Service icon="CSV" kind="orders" label="Order source" name="Orders snapshot" connected={Boolean(orderImport)} />
+      <p>{orderImport ? `${orderImport.filename} contains ${orderImport.rowCount} orders.` : "A valid upload replaces the previous order snapshot."}</p>
+      <code>order_id,customer_email,customer_name,status,tracking_number,carrier,status_updated_at,line_items</code>
+      <label className={styles.uploadButton}>
+        {working ? "Validating orders…" : orderImport ? "Replace orders CSV" : "Upload orders CSV"}
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          disabled={working}
+          onChange={(event) => {
+            void upload(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+      </label>
       {feedback ? <p className={styles.feedback}>{feedback}</p> : null}
     </article>
   );
