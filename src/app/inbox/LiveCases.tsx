@@ -14,7 +14,15 @@ type ReceivedCase = {
   from: string;
   subject: string;
   text: string;
-  status: "received" | "investigating" | "identity_needed" | "order_needed" | "awaiting_approval" | "awaiting_courier";
+  status:
+    | "received"
+    | "investigating"
+    | "identity_needed"
+    | "order_needed"
+    | "awaiting_approval"
+    | "awaiting_courier"
+    | "human_attention"
+    | "closed";
   agentRunStatus: "queued" | "running" | "waiting" | "completed" | "failed" | "escalated" | null;
   customer: { name: string; email: string } | null;
   orders: Array<{
@@ -49,6 +57,100 @@ type ReceivedCase = {
     note: string;
   } | null;
 };
+
+function formatInboxTime(value: number) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
+function CaseState({
+  status,
+  hasCustomer,
+}: {
+  status: ReceivedCase["status"];
+  hasCustomer: boolean;
+}) {
+  if (status === "closed") {
+    return (
+      <section className={styles.caseState} data-tone="done">
+        <small>Automatic reply sent</small>
+        <strong>Order status was matched from the current CSV snapshot.</strong>
+        <p>WISMO replied in the original email thread and closed the case.</p>
+      </section>
+    );
+  }
+
+  if (status === "order_needed") {
+    return (
+      <section className={styles.caseState} data-tone="watch">
+        <small>Clarification sent</small>
+        <strong>Waiting for the customer to clarify the order or question.</strong>
+        <p>No safe single match was found, so WISMO asked a follow-up question instead of guessing.</p>
+      </section>
+    );
+  }
+
+  if (status === "identity_needed") {
+    return (
+      <section className={styles.caseState} data-tone="watch">
+        <small>Identity check needed</small>
+        <strong>Customer details are still being verified.</strong>
+        <p>Order details stay hidden until the sender can be matched safely.</p>
+      </section>
+    );
+  }
+
+  if (status === "awaiting_approval") {
+    return (
+      <section className={styles.caseState} data-tone="watch">
+        <small>Approval needed</small>
+        <strong>A drafted reply is ready for review.</strong>
+        <p>WISMO prepared the next step and is waiting for a human decision.</p>
+      </section>
+    );
+  }
+
+  if (status === "awaiting_courier") {
+    return (
+      <section className={styles.caseState} data-tone="neutral">
+        <small>External follow-up</small>
+        <strong>The case is waiting on a courier response.</strong>
+        <p>The customer reply is paused until new delivery evidence comes back.</p>
+      </section>
+    );
+  }
+
+  if (status === "human_attention") {
+    return (
+      <section className={styles.caseState} data-tone="danger">
+        <small>Human attention</small>
+        <strong>WISMO escalated this case for a manual decision.</strong>
+        <p>The available evidence conflicts or the risk is too high for an automatic reply.</p>
+      </section>
+    );
+  }
+
+  if (status === "investigating" && hasCustomer) {
+    return (
+      <section className={styles.caseState} data-tone="neutral">
+        <small>Matched customer</small>
+        <strong>Order evidence is available and the case is being checked.</strong>
+        <p>WISMO found a customer and order record, then moved into verification.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className={styles.caseState} data-tone="neutral">
+      <small>Email received</small>
+      <strong>This message has been captured and is waiting for the next safe step.</strong>
+      <p>WISMO will either answer, ask for clarification, or send it for review.</p>
+    </section>
+  );
+}
+
 type InvestigationEvidence = {
   collectedAt: number;
   order: {
@@ -237,11 +339,10 @@ export default function LiveCases() {
     return (
       <section className={styles.liveCases}>
         <div>
-          <p className={styles.eyebrow}>Live intake · Gmail</p>
+          <p className={styles.eyebrow}>Live inbox · Gmail</p>
           <h2>Sign in to review polled cases.</h2>
           <p className={styles.liveDescription}>
-            The sample queue stays visible below. Sign in to see messages
-            received from your connected test inbox.
+            Sign in to see messages received from your connected inbox and the actions WISMO took.
           </p>
         </div>
         <Link className={styles.liveAction} href="/login">
@@ -253,10 +354,10 @@ export default function LiveCases() {
     <section className={styles.liveCases} aria-labelledby="live-cases-title">
       <header>
         <div>
-          <p className={styles.eyebrow}>Live intake · Gmail · every minute</p>
-          <h2 id="live-cases-title">New from the test inbox</h2>
+          <p className={styles.eyebrow}>Live inbox · Gmail · every minute</p>
+          <h2 id="live-cases-title">Recent delivery cases</h2>
           <p className={styles.liveDescription}>
-            Original messages with saved Shopify identity and delivery evidence.
+            Automatic replies, clarifications, and the conversations that still need review.
           </p>
         </div>
         <button onClick={pollNow} disabled={working}>
@@ -284,10 +385,11 @@ export default function LiveCases() {
                   <small>From</small>
                   <strong>{item.from}</strong>
                 </div>
-                <time>{new Date(item.createdAt).toLocaleString()}</time>
+                <time>{formatInboxTime(item.createdAt)}</time>
               </header>
               <h3>{item.subject}</h3>
               <p>{item.text || "(empty message)"}</p>
+              <CaseState status={item.status} hasCustomer={Boolean(item.customer)} />
               {item.agentRunStatus === "failed" ? (
                 <button
                   className={styles.investigateButton}
@@ -453,9 +555,7 @@ export default function LiveCases() {
                       <p>A safe reply could not be prepared.</p>
                     )}
                   </div>
-                ) : (
-                  <p>Shopify customer match pending.</p>
-                )}
+                ) : null}
               </div>
               <dl>
                 <div>

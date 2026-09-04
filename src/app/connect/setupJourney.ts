@@ -89,3 +89,12 @@ export function firstIncompleteStage(progress: SetupProgress): SetupStageId {
   if (!progress.reviewDone) return "review";
   return "activate";
 }
+
+export function visibleSetupStage(
+  progress: SetupProgress,
+  selectedStage: SetupStageId | null,
+): SetupStageId {
+  const fallbackStage = progress.activated ? "activate" : firstIncompleteStage(progress);
+  if (!selectedStage) return fallbackStage;
+  return progress.stageStates[selectedStage] === "locked" ? fallbackStage : selectedStage;
+}

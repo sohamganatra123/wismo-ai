@@ -184,6 +184,7 @@
 .progressList li button[aria-current="step"] {
   border-color: rgba(36, 87, 255, 0.28);
   box-shadow: 0 0 0 3px rgba(36, 87, 255, 0.08);
+  transform: translateX(4px);
 }
 
 .progressList li button > span {
@@ -996,12 +997,31 @@
   .rail {
     position: static;
     height: auto;
+    display: grid;
+    gap: 16px;
     padding: 20px;
   }
 
   .workspace {
     width: 100%;
     padding: 40px 20px 80px;
+  }
+
+  .progressList {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .progressList li {
+    flex: 0 0 min(280px, 78vw);
+    scroll-snap-align: start;
+  }
+
+  .progressList li button[aria-current="step"] {
+    transform: none;
   }
 
   .modeGrid,
@@ -1023,6 +1043,16 @@
 
   .stageActions .primary {
     width: 100%;
+  }
+
+  .railCard {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 720px) {
+  .railCard {
+    display: none;
   }
 }
 

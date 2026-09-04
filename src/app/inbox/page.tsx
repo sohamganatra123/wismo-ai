@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { cases } from "./caseData";
 import LiveCases from "./LiveCases";
 import styles from "./page.module.css";
 
-export const metadata = { title: "Human attention · WISMO" };
+export const metadata = { title: "Inbox · WISMO" };
 
 export default function HumanAttentionInbox() {
   return (
@@ -15,8 +14,8 @@ export default function HumanAttentionInbox() {
         </Link>
         <nav aria-label="Product navigation">
           <Link href="/inbox" aria-current="page">
-            <span>Attention</span>
-            <b>{cases.length}</b>
+            <span>Inbox</span>
+            <b>Live</b>
           </Link>
           <span aria-disabled="true">Active automation</span>
           <span aria-disabled="true">History</span>
@@ -24,8 +23,8 @@ export default function HumanAttentionInbox() {
         <div className={styles.boundary}>
           <i />
           <div>
-            <strong>Manager assisted</strong>
-            <small>No message sends without approval</small>
+            <strong>Safe automation</strong>
+            <small>Fresh order-status replies can send automatically. Edge cases still wait here.</small>
           </div>
         </div>
       </aside>
@@ -33,66 +32,15 @@ export default function HumanAttentionInbox() {
       <section className={styles.workspace}>
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Human attention</p>
-            <h1>Cases that need judgment.</h1>
+            <p className={styles.eyebrow}>Operations inbox</p>
+            <h1>Delivery conversations, sorted.</h1>
           </div>
           <p>
-            Review uncertain evidence, choose the next safe action, and leave
-            routine investigation to WISMO.
+            See what WISMO answered automatically and step into the cases that still need a decision.
           </p>
         </header>
 
         <LiveCases />
-
-        <section className={styles.queue} aria-labelledby="queue-title">
-          <div className={styles.queueHead}>
-            <div>
-              <p className={styles.eyebrow}>Demo queue</p>
-              <h2 id="queue-title">Sample cases</h2>
-              <span>Oldest deadline first</span>
-            </div>
-            <span className={styles.live}>
-              <i /> Demo data
-            </span>
-          </div>
-
-          <div className={styles.labels} aria-hidden="true">
-            <span>Customer</span>
-            <span>Reason</span>
-            <span>Recommendation</span>
-            <span>Deadline</span>
-          </div>
-
-          <div className={styles.caseList}>
-            {cases.map((item) => (
-              <Link
-                className={styles.case}
-                href={`/inbox/${item.id}`}
-                key={item.id}
-                aria-label={`Open ${item.customer}, order ${item.order}`}
-              >
-                <div className={styles.identity}>
-                  <span className={styles.avatar}>{item.initials}</span>
-                  <div>
-                    <strong>{item.customer}</strong>
-                    <small>
-                      {item.order} · {item.id}
-                    </small>
-                  </div>
-                </div>
-                <div className={styles.reason}>
-                  <strong>{item.reason}</strong>
-                  <small>{item.note}</small>
-                </div>
-                <p>{item.recommendation}</p>
-                <div className={styles.deadline} data-urgency={item.urgency}>
-                  <small>Respond within</small>
-                  <strong>{item.deadline}</strong>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
       </section>
     </main>
   );

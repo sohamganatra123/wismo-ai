@@ -16,10 +16,10 @@ import {
 import { autonomyModeContent, autonomyModes } from "./onboardingContent";
 import {
   deriveSetupProgress,
-  firstIncompleteStage,
   setupStages,
   type SetupDraft,
   type SetupStageId,
+  visibleSetupStage,
 } from "./setupJourney";
 import { loadSetupDraft, saveSetupDraft } from "./setupStorage";
 import { parseOrdersCsv, type OrderRecord } from "@/prototype/orders";
@@ -97,7 +97,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
   const memories = useQuery(memoriesRef, {});
   const orderImport = useQuery(orderImportStatusRef, {});
   const [draft, setDraft] = useState<SetupDraft>(() => loadSetupDraft());
-  const [selectedStage, setSelectedStage] = useState<SetupStageId>("brief");
+  const [selectedStage, setSelectedStage] = useState<SetupStageId | null>(null);
   const currentIntegrations = integrations ?? [];
   const currentSettings = settings ?? { contacts: [], rules: [] };
   const currentMemories = memories ?? [];
@@ -118,8 +118,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
     reviewConfirmed: draft.reviewConfirmed,
     activated: draft.activated,
   });
-  const fallbackStage = progress.activated ? "activate" : firstIncompleteStage(progress);
-  const visibleStage = progress.stageStates[selectedStage] === "locked" ? fallbackStage : selectedStage;
+  const visibleStage = visibleSetupStage(progress, selectedStage);
   const activeMode = autonomyModeContent(draft.mode);
   const gmailStatus = searchParams.get("gmail");
   const gmailReason = searchParams.get("reason");

@@ -301,6 +301,7 @@ export const listReceivedCases = query({
             "awaiting_approval",
             "awaiting_courier",
             "human_attention",
+            "closed",
           ] as const
         ).map((status) =>
           ctx.db

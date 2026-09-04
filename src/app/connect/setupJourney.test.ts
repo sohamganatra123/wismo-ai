@@ -3,6 +3,7 @@ import {
   defaultSetupDraft,
   deriveSetupProgress,
   firstIncompleteStage,
+  visibleSetupStage,
 } from "./setupJourney";
 
 describe("setupJourney", () => {
@@ -88,5 +89,21 @@ describe("setupJourney", () => {
 
   it("keeps the default mode ready for the brief step", () => {
     expect(defaultSetupDraft.mode).toBe("approval");
+  });
+
+  it("reopens the activation step after setup is complete", () => {
+    const progress = deriveSetupProgress({
+      briefConfirmed: true,
+      gmailConnected: true,
+      ordersLoaded: true,
+      contactCount: 1,
+      ruleCount: 1,
+      pendingMemoryCount: 0,
+      reviewConfirmed: true,
+      activated: true,
+    });
+
+    expect(visibleSetupStage(progress, null)).toBe("activate");
+    expect(visibleSetupStage(progress, "brief")).toBe("brief");
   });
 });

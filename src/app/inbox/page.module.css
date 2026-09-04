@@ -125,142 +125,6 @@
   font-size: 13px;
   line-height: 1.65;
 }
-.queue {
-  max-width: 1180px;
-  margin-top: 64px;
-  padding-top: 32px;
-  border-top: 1px solid var(--border-soft);
-}
-.queueHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-.queueHead > div {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  gap: 8px 16px;
-}
-.queueHead > div .eyebrow {
-  grid-column: 1/-1;
-}
-.queueHead h2 {
-  font: 740 22px var(--font-display);
-  letter-spacing: -0.025em;
-}
-.queueHead span {
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-.live {
-  display: flex;
-  align-items: center;
-  gap: 8px !important;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--paper);
-  font: 650 11px var(--font-data) !important;
-  text-transform: uppercase;
-  box-shadow: 0 0 0 1px var(--border-soft);
-}
-.live i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--amber);
-}
-.labels,
-.case {
-  display: grid;
-  grid-template-columns:
-    minmax(175px, 0.85fr) minmax(230px, 1.15fr) minmax(260px, 1.35fr)
-    100px;
-  gap: 24px;
-}
-.labels {
-  padding: 0 20px 12px;
-  color: var(--ink-soft);
-  font: 650 11px var(--font-data);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.caseList {
-  display: grid;
-  gap: 8px;
-}
-.case {
-  align-items: center;
-  padding: 20px;
-  border-radius: 12px;
-  background: var(--paper);
-  box-shadow: var(--shadow-card);
-}
-.identity {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.avatar {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  color: var(--attention);
-  background: var(--attention-soft);
-  font: 700 12px var(--font-data);
-}
-.identity > div,
-.reason {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-}
-.identity strong,
-.reason strong {
-  font-size: 13px;
-}
-.identity small,
-.reason small {
-  color: var(--slate);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.reason small {
-  max-width: 280px;
-}
-.case > p {
-  color: #343a43;
-  font-size: 12px;
-  line-height: 1.55;
-}
-.deadline {
-  display: grid;
-  gap: 8px;
-  justify-items: end;
-}
-.deadline small {
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-.deadline strong {
-  color: var(--attention);
-  font: 720 18px var(--font-data);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
-}
-.deadline[data-urgency="urgent"] strong {
-  color: var(--danger);
-}
-.case:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 0 0 1px rgba(164, 95, 18, 0.22),
-    0 12px 30px rgba(17, 19, 24, 0.07);
-}
 .liveCases {
   max-width: 1180px;
   display: flex;
@@ -289,7 +153,7 @@
   max-width: 600px;
   margin-top: 8px;
   color: var(--slate);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
 }
 .liveCases button,
@@ -328,7 +192,7 @@
   border-radius: 8px;
   color: #6f4b18;
   background: var(--amber-soft);
-  font-size: 12px;
+  font-size: 13px;
 }
 .receivedList {
   width: 100%;
@@ -341,12 +205,13 @@
   border-radius: 10px;
   color: var(--slate);
   background: var(--control-bg);
-  font-size: 12px;
+  font-size: 13px;
 }
 .receivedList article {
-  padding: 16px;
-  border-radius: 10px;
-  background: var(--control-bg);
+  padding: 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 244, 234, 0.82));
+  box-shadow: inset 0 0 0 1px rgba(17, 19, 24, 0.06);
 }
 .receivedList article > header {
   display: flex;
@@ -360,23 +225,73 @@
 }
 .receivedList small {
   color: var(--slate);
-  font: 600 11px var(--font-data);
+  font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
 .receivedList time {
   color: var(--slate);
-  font: 600 11px var(--font-data);
+  font: 700 12px var(--font-data);
+  font-variant-numeric: tabular-nums;
 }
 .receivedList h3 {
   margin-top: 16px;
-  font-size: 14px;
+  font: 720 17px/1.3 var(--font-display);
+  letter-spacing: -0.02em;
 }
 .receivedList article > p {
-  margin-top: 8px;
+  margin-top: 10px;
+  color: #434b55;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+.caseState {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 19, 24, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+}
+.caseState small {
+  font: 700 11px var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.caseState strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.caseState p {
+  margin: 0;
   color: var(--slate);
   font-size: 12px;
   line-height: 1.55;
-  white-space: pre-wrap;
+}
+.caseState[data-tone="done"] {
+  border-color: rgba(55, 124, 62, 0.18);
+  background: color-mix(in srgb, var(--jade-soft) 58%, white);
+}
+.caseState[data-tone="done"] small {
+  color: var(--jade);
+}
+.caseState[data-tone="watch"] {
+  border-color: rgba(164, 95, 18, 0.16);
+  background: color-mix(in srgb, var(--amber-soft) 52%, white);
+}
+.caseState[data-tone="watch"] small {
+  color: var(--attention);
+}
+.caseState[data-tone="danger"] {
+  border-color: rgba(186, 73, 73, 0.18);
+  background: color-mix(in srgb, #f4dfdf 78%, white);
+}
+.caseState[data-tone="danger"] small {
+  color: var(--danger);
+}
+.caseState[data-tone="neutral"] small {
+  color: var(--carbon);
 }
 .shopifyEvidence {
   display: grid;
@@ -557,10 +472,10 @@
 }
 .receivedList dt {
   color: var(--slate);
-  font-size: 11px;
+  font-size: 12px;
 }
 .receivedList dd {
-  font: 600 11px var(--font-data);
+  font: 600 12px var(--font-data);
 }
 .liveCases {
   flex-wrap: wrap;
@@ -597,22 +512,13 @@
   .header > p {
     margin-top: 18px;
   }
-  .labels {
-    display: none;
-  }
-  .case {
-    grid-template-columns: 1fr 90px;
-  }
-  .reason,
-  .case > p {
-    grid-column: 1/-1;
-  }
-  .deadline {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  .queue {
-    margin-top: 48px;
+  .liveCases > header,
+  .receivedList article > header,
+  .shopifyEvidence > header,
+  .customerUpdate > header,
+  .investigationResult > header {
+    display: grid;
+    gap: 12px;
   }
 }
 @media (max-width: 520px) {
@@ -626,15 +532,7 @@
   .header h1 {
     font-size: 38px;
   }
-  .case {
-    grid-template-columns: 1fr;
-    padding: 16px;
-  }
-  .deadline {
-    grid-column: 1;
-    grid-row: auto;
-    justify-items: start;
-    padding-top: 12px;
-    border-top: 1px solid rgba(17, 19, 24, 0.07);
+  .liveCases {
+    padding: 24px 18px;
   }
 }
