@@ -55,6 +55,18 @@ function statusReply(order: {
   return `Hi ${firstName},\n\nOrder #${order.orderId} is ${order.status.toLowerCase()}${carrier}.${tracking}\n\nThis status was updated ${new Date(order.statusUpdatedAt).toLocaleString("en", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC.\n\nWISMO`;
 }
 
+function messageKind(message: {
+  direction: "inbound" | "outbound";
+  kind?: "customer" | "agent_clarification" | "agent_reply" | "founder_reply";
+  text: string;
+}) {
+  if (message.kind) return message.kind;
+  if (message.direction === "inbound") return "customer" as const;
+  return /please reply with|which delivery|matching option/i.test(message.text)
+    ? "agent_clarification" as const
+    : "agent_reply" as const;
+}
+
 export const prepareInbound = internalMutation({
   args: {
     providerId: v.string(),
@@ -96,6 +108,7 @@ export const prepareInbound = internalMutation({
         messageIdHeader: args.messageIdHeader,
         direction: "inbound",
         party: "customer",
+        kind: "customer",
         from: args.from,
         to: args.to,
         subject: args.subject,
@@ -114,6 +127,7 @@ export const prepareInbound = internalMutation({
         messageIdHeader: args.messageIdHeader,
         direction: "inbound",
         party: "customer",
+        kind: "customer",
         from: args.from,
         to: args.to,
         subject: args.subject,
@@ -183,6 +197,7 @@ export const prepareInbound = internalMutation({
       messageIdHeader: args.messageIdHeader,
       direction: "inbound",
       party: "customer",
+      kind: "customer",
       from: args.from,
       to: args.to,
       subject: args.subject,
@@ -232,6 +247,7 @@ export const completeClarification = internalMutation({
       threadId: args.threadId,
       direction: "outbound",
       party: "support",
+      kind: "agent_clarification",
       from: args.from,
       to: [args.to],
       subject: args.subject,
@@ -264,7 +280,7 @@ export const completeStatusReply = internalMutation({
     const now = Date.now();
     await ctx.db.insert("messages", {
       providerId: args.providerId, threadId: args.threadId, direction: "outbound",
-      party: "support", from: args.from, to: [args.to], subject: args.subject,
+      party: "support", kind: "agent_reply", from: args.from, to: [args.to], subject: args.subject,
       text: args.text, hasAttachments: false, sentAt: now, deliveryStatus: "sent",
       caseId: args.caseId,
     });
@@ -315,9 +331,15 @@ export const listReceivedCases = query({
       .flat()
       .sort((left, right) => right.createdAt - left.createdAt)
       .slice(0, 10);
-    return Promise.all(
+    const items = await Promise.all(
       rows.map(async (item) => {
         const message = await ctx.db.get(item.sourceMessageId);
+        const threadMessages = message
+          ? await ctx.db
+              .query("messages")
+              .withIndex("by_thread", (q) => q.eq("threadId", message.threadId))
+              .collect()
+          : [];
         const customer = item.customerId
           ? await ctx.db.get(item.customerId)
           : null;
@@ -379,6 +401,21 @@ export const listReceivedCases = query({
               responseDeadlineAt: item.responseDeadlineAt ?? null,
               escalatedAt: item.escalatedAt ?? null,
               guidance: item.guidance ?? null,
+              canFounderReply: profile.role === "founder",
+              messages: threadMessages
+                .sort((left, right) => left.sentAt - right.sentAt)
+                .map((threadMessage) => ({
+                  id: threadMessage._id,
+                  direction: threadMessage.direction,
+                  party: threadMessage.party,
+                  kind: messageKind(threadMessage),
+                  from: threadMessage.from,
+                  to: threadMessage.to,
+                  subject: threadMessage.subject,
+                  text: threadMessage.text,
+                  sentAt: threadMessage.sentAt,
+                  deliveryStatus: threadMessage.deliveryStatus ?? null,
+                })),
               customer: customer
                 ? {
                     name: customer.name ?? customer.email,
@@ -434,6 +471,12 @@ export const listReceivedCases = query({
             }
           : null;
       }),
-    ).then((items) => items.filter((item) => item !== null));
+    );
+    const seenThreads = new Set<string>();
+    return items.filter((item) => {
+      if (!item || seenThreads.has(item.threadId)) return false;
+      seenThreads.add(item.threadId);
+      return true;
+    });
   },
 });

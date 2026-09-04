@@ -10,6 +10,7 @@ const contextKeys = new Set([
   "caseStatus", "subject", "body", "priorSupportMessages", "identityMatched",
   "orderResolved", "orderCount", "orderName", "lineItems", "fulfillmentStatus",
   "trackingNumber", "snapshotAt", "latestTracking", "hasConflict", "workspacePolicy",
+  "founderReplyExamples",
 ]);
 const resultKeys = new Set([
   "status", "summary", "reason", "recommendation", "identityMatched",
@@ -19,6 +20,7 @@ const resultKeys = new Set([
 const scanKeys = new Set(["status", "eventTime", "source"]);
 const policyKeys = new Set(["mode", "proofComplete"]);
 const messageKeys = new Set(["subject", "body"]);
+const replyExampleKeys = new Set(["customerMessage", "founderReply"]);
 const outputKeys = new Set(["callId", "name", "result"]);
 const policyAuditKeys = new Set([
   "mode", "proofComplete", "exactIdentity", "orderResolved", "exactTracking",
@@ -102,6 +104,29 @@ export function assertAgentModelContext(value: AgentModelContext): AgentModelCon
     };
   });
 
+  let founderReplyExamples: AgentModelContext["founderReplyExamples"];
+  if (item.founderReplyExamples !== undefined) {
+    if (!Array.isArray(item.founderReplyExamples) || item.founderReplyExamples.length > 5) {
+      throw new Error("founderReplyExamples must contain at most 5 items");
+    }
+    founderReplyExamples = item.founderReplyExamples.map((example, index) => {
+      const entry = record(example, `founderReplyExamples[${index}]`);
+      exactKeys(entry, replyExampleKeys, `founderReplyExamples[${index}]`);
+      return {
+        customerMessage: text(
+          entry.customerMessage,
+          `founderReplyExamples[${index}].customerMessage`,
+          2_000,
+        ),
+        founderReply: text(
+          entry.founderReply,
+          `founderReplyExamples[${index}].founderReply`,
+          2_000,
+        ),
+      };
+    });
+  }
+
   let workspacePolicy: AgentModelContext["workspacePolicy"];
   if (item.workspacePolicy !== undefined) {
     const policy = record(item.workspacePolicy, "workspacePolicy");
@@ -123,6 +148,7 @@ export function assertAgentModelContext(value: AgentModelContext): AgentModelCon
     subject: text(item.subject, "subject", 300),
     body: text(item.body, "body", 8_000),
     priorSupportMessages,
+    founderReplyExamples,
     identityMatched: optionalBoolean(item.identityMatched, "identityMatched"),
     orderResolved: optionalBoolean(item.orderResolved, "orderResolved"),
     orderCount: optionalNumber(item.orderCount, "orderCount"),

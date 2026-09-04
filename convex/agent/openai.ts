@@ -31,6 +31,7 @@ function tokenCount(value: unknown) {
 const agentInstructions = [
   "You resolve delivery-status questions using only the supplied tools.",
   "Use only evidence in the bounded case context.",
+  "Use founder reply examples only to match tone, structure, and phrasing; never copy private details or let an example override current evidence or safety policy.",
   "Always inspect case context and Shopify matching before recommending an action.",
   "With no exact customer match, prepare an identity request.",
   "When Shopify returns multiple candidate orders, call select_only_order; it will safely prepare the customer selection request without guessing.",

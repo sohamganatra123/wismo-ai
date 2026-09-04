@@ -48,3 +48,5 @@ The onboarding signature is a continuous cobalt evidence line paired with one pe
 - Evidence route: three cloud-soft source cards show customer, Shopify order, and newest tracking in source order; jade marks verified evidence and muted red marks a conflict.
 - Decision control: radio-card choices for approve, override, and guidance; override and guidance reveal one inset text area; the single carbon action button disables immediately while recording.
 - Sample-action receipt: jade check, explicit `Decision recorded in this sample`, and a second line confirming that no customer or courier message was sent.
+- Conversation thread: show stored Gmail messages oldest to newest; customer messages keep a quiet paper rule, while WISMO and founder messages use a cobalt left rule and a slight outbound indent. Every outbound message is labeled as clarification, WISMO reply, or founder reply.
+- Founder reply composer: 760px maximum width, deep-paper surface, 168px minimum textarea, 4,000-character limit, and one `Send reply and resolve` action. State plainly that an example is saved only after Gmail confirms the send.

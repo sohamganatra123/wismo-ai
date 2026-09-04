@@ -87,7 +87,7 @@ export default defineSchema({
     hasConflict: v.optional(v.boolean()),
     collectedAt: v.number(),
   }).index("by_case", ["caseId"]),
-  messages: defineTable({ providerId: v.string(), threadId: v.string(), messageIdHeader: v.optional(v.string()), direction: v.union(v.literal("inbound"), v.literal("outbound")), party: v.union(v.literal("customer"), v.literal("courier"), v.literal("support")), from: v.string(), to: v.array(v.string()), subject: v.string(), text: v.string(), hasAttachments: v.boolean(), sentAt: v.number(), deliveryStatus: v.optional(v.string()), caseId: v.optional(v.id("cases")) })
+  messages: defineTable({ providerId: v.string(), threadId: v.string(), messageIdHeader: v.optional(v.string()), direction: v.union(v.literal("inbound"), v.literal("outbound")), party: v.union(v.literal("customer"), v.literal("courier"), v.literal("support")), kind: v.optional(v.union(v.literal("customer"), v.literal("agent_clarification"), v.literal("agent_reply"), v.literal("founder_reply"))), actorUserId: v.optional(v.id("users")), from: v.string(), to: v.array(v.string()), subject: v.string(), text: v.string(), hasAttachments: v.boolean(), sentAt: v.number(), deliveryStatus: v.optional(v.string()), caseId: v.optional(v.id("cases")) })
     .index("by_provider_id", ["providerId"]).index("by_thread", ["threadId"]).index("by_case", ["caseId"]),
   cases: defineTable({ customerId: v.optional(v.id("customers")), orderId: v.optional(v.id("orders")), candidateOrderIds: v.optional(v.array(v.id("orders"))), sourceMessageId: v.id("messages"), status: caseStatus, ownerId: v.optional(v.id("users")), escalationReason: v.optional(v.string()), recommendation: v.optional(v.string()), responseDeadlineAt: v.optional(v.number()), escalatedAt: v.optional(v.number()), escalationOwnerReminderAt: v.optional(v.number()), finalReminderAt: v.optional(v.number()), guidance: v.optional(v.string()), identityAttempts: v.number(), firstActionAt: v.optional(v.number()), resolvedAt: v.optional(v.number()), closedAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number() })
     .index("by_status", ["status"]).index("by_source_message", ["sourceMessageId"]).index("by_customer_order", ["customerId", "orderId"]).index("by_owner", ["ownerId"]),
@@ -101,6 +101,8 @@ export default defineSchema({
     .index("by_case", ["caseId"]),
   memories: defineTable({ guidance: v.string(), proposedBy: v.id("users"), status: v.union(v.literal("proposed"), v.literal("approved"), v.literal("rejected")), scope: v.literal("case_guidance"), caseId: v.optional(v.id("cases")), ruleId: v.optional(v.id("rules")), decidedBy: v.optional(v.id("users")), createdAt: v.number(), decidedAt: v.optional(v.number()) })
     .index("by_status", ["status"]).index("by_case", ["caseId"]),
+  replyExamples: defineTable({ caseId: v.id("cases"), sourceMessageId: v.id("messages"), replyMessageId: v.id("messages"), customerText: v.string(), replyText: v.string(), createdBy: v.id("users"), createdAt: v.number() })
+    .index("by_case", ["caseId"]).index("by_reply_message", ["replyMessageId"]),
   rules: defineTable({ title: v.string(), guidance: v.string(), active: v.boolean(), createdBy: v.id("users"), updatedAt: v.number() })
     .index("by_active", ["active"]),
   agentPolicies: defineTable({

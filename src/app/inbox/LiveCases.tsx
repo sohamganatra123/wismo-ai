@@ -3,7 +3,8 @@
 import { makeFunctionReference } from "convex/server";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import Link from "next/link";
-import { useState } from "react";
+import { startTransition, useState } from "react";
+import FounderReplyComposer from "./FounderReplyComposer";
 import styles from "./page.module.css";
 
 type ReceivedCase = {
@@ -25,6 +26,19 @@ type ReceivedCase = {
     | "closed";
   agentRunStatus: "queued" | "running" | "waiting" | "completed" | "failed" | "escalated" | null;
   customer: { name: string; email: string } | null;
+  canFounderReply: boolean;
+  messages: Array<{
+    id: string;
+    direction: "inbound" | "outbound";
+    party: "customer" | "courier" | "support";
+    kind: "customer" | "agent_clarification" | "agent_reply" | "founder_reply";
+    from: string;
+    to: string[];
+    subject: string;
+    text: string;
+    sentAt: number;
+    deliveryStatus: string | null;
+  }>;
   orders: Array<{
     id: string;
     name: string;
@@ -94,10 +108,12 @@ function messageSnippet(value: string) {
   return text.length > 96 ? `${text.slice(0, 93)}...` : text;
 }
 
-function statusLabel(status: ReceivedCase["status"]) {
+function statusLabel(status: ReceivedCase["status"], messages: ReceivedCase["messages"] = []) {
   switch (status) {
     case "closed":
-      return "Auto-replied";
+      return messages.some((message) => message.kind === "founder_reply")
+        ? "Founder replied"
+        : "Auto-replied";
     case "order_needed":
       return "Clarifying";
     case "identity_needed":
@@ -115,14 +131,38 @@ function statusLabel(status: ReceivedCase["status"]) {
   }
 }
 
+function messageLabel(message: ReceivedCase["messages"][number]) {
+  switch (message.kind) {
+    case "agent_clarification":
+      return "Clarification sent";
+    case "founder_reply":
+      return "Founder reply";
+    case "agent_reply":
+      return "WISMO reply";
+    default:
+      return message.party === "courier" ? "Courier message" : "Customer";
+  }
+}
+
 function CaseState({
   status,
   hasCustomer,
+  hasFounderReply,
 }: {
   status: ReceivedCase["status"];
   hasCustomer: boolean;
+  hasFounderReply: boolean;
 }) {
   if (status === "closed") {
+    if (hasFounderReply) {
+      return (
+        <section className={styles.caseState} data-tone="done">
+          <small>Founder reply sent</small>
+          <strong>This conversation was resolved by the founder.</strong>
+          <p>The sent reply is now available to the agent as a reviewed example.</p>
+        </section>
+      );
+    }
     return (
       <section className={styles.caseState} data-tone="done">
         <small>Automatic reply sent</small>
@@ -428,6 +468,9 @@ export default function LiveCases() {
         ) : (
           (() => {
             const selected = rows.find((item) => item.id === selectedCaseId) ?? rows[0];
+            const hasFounderReply = selected.messages.some(
+              (message) => message.kind === "founder_reply",
+            );
             return (
               <div className={styles.threadShell}>
                 <nav className={styles.threadList} aria-label="Email threads">
@@ -440,7 +483,7 @@ export default function LiveCases() {
                         className={styles.threadRow}
                         data-active={active}
                         aria-current={active ? "true" : undefined}
-                        onClick={() => setSelectedCaseId(item.id)}
+                        onClick={() => startTransition(() => setSelectedCaseId(item.id))}
                       >
                         <span className={styles.threadAvatar} aria-hidden="true">
                           {senderInitial(item.from)}
@@ -455,7 +498,7 @@ export default function LiveCases() {
                           <h3>{item.subject}</h3>
                           <p>{messageSnippet(item.text)}</p>
                           <div className={styles.threadMeta}>
-                            <small>{statusLabel(item.status)}</small>
+                            <small>{statusLabel(item.status, item.messages)}</small>
                             {item.customer ? <span>Matched to {item.customer.name}</span> : null}
                           </div>
                         </div>
@@ -477,18 +520,41 @@ export default function LiveCases() {
                   </header>
 
                   <div className={styles.messageStack}>
-                    <section className={styles.messageBubble}>
-                      <header>
-                        <div>
-                          <strong>{senderLabel(selected.from)}</strong>
-                          <small>{selected.from}</small>
-                        </div>
-                        <time>{formatInboxTime(selected.createdAt)}</time>
-                      </header>
-                      <p>{selected.text || "(empty message)"}</p>
-                    </section>
+                    <div className={styles.conversationThread} aria-label="Complete Gmail thread">
+                      {selected.messages.map((message) => (
+                        <article
+                          className={styles.threadMessage}
+                          data-direction={message.direction}
+                          data-kind={message.kind}
+                          key={message.id}
+                        >
+                          <header>
+                            <div>
+                              <strong>{messageLabel(message)}</strong>
+                              <small>{senderLabel(message.from)}</small>
+                            </div>
+                            <time dateTime={new Date(message.sentAt).toISOString()}>
+                              {formatInboxTime(message.sentAt)}
+                            </time>
+                          </header>
+                          <p>{message.text || "(empty message)"}</p>
+                        </article>
+                      ))}
+                    </div>
 
-                    <CaseState status={selected.status} hasCustomer={Boolean(selected.customer)} />
+                    <CaseState
+                      status={selected.status}
+                      hasCustomer={Boolean(selected.customer)}
+                      hasFounderReply={hasFounderReply}
+                    />
+
+                    {selected.canFounderReply && !hasFounderReply ? (
+                      <FounderReplyComposer
+                        key={selected.id}
+                        caseId={selected.id}
+                        recipientName={senderLabel(selected.from)}
+                      />
+                    ) : null}
 
                     {selected.agentRunStatus === "failed" ? (
                       <button

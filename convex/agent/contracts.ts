@@ -22,6 +22,10 @@ export type AgentModelContext = {
   subject: string;
   body: string;
   priorSupportMessages: Array<{ subject: string; body: string }>;
+  founderReplyExamples?: Array<{
+    customerMessage: string;
+    founderReply: string;
+  }>;
   identityMatched?: boolean;
   orderResolved?: boolean;
   orderCount?: number;

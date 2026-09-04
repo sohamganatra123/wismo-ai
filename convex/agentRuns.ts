@@ -104,6 +104,22 @@ export const getRoundState = internalQuery({
         subject: boundedContextText(message.subject, 300, "(no subject)"),
         body: boundedContextText(message.text, 2_000, "(empty message)"),
       }));
+    const founderReplyExamples = (
+      await ctx.db.query("replyExamples").order("desc").take(5)
+    )
+      .reverse()
+      .map((example) => ({
+        customerMessage: boundedContextText(
+          example.customerText,
+          2_000,
+          "(empty customer message)",
+        ),
+        founderReply: boundedContextText(
+          example.replyText,
+          2_000,
+          "(empty founder reply)",
+        ),
+      }));
     const activePolicy = await ctx.db
       .query("agentPolicies")
       .withIndex("by_active", (q) => q.eq("active", true))
@@ -129,6 +145,7 @@ export const getRoundState = internalQuery({
       subject: boundedContextText(source.subject, 300, "(no subject)"),
       body: boundedContextText(source.text, 8_000, "(empty message)"),
       priorSupportMessages,
+      founderReplyExamples,
       identityMatched: Boolean(item.customerId),
       orderResolved: Boolean(order),
       orderCount: orders.length,

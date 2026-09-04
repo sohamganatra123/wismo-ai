@@ -1,11 +1,68 @@
 import { describe, expect, it } from "vitest";
 import {
+  assertAgentModelContext,
   assertAgentSafeToolOutputs,
   assertAgentStepInput,
   assertAgentStepOutput,
 } from "./privacy";
 
 describe("agent persistence privacy boundary", () => {
+  const baseContext = {
+    caseStatus: "human_attention",
+    subject: "Where is my order?",
+    body: "Please help with order 4921.",
+    priorSupportMessages: [],
+  };
+
+  it("accepts a bounded founder reply example", () => {
+    expect(
+      assertAgentModelContext({
+        ...baseContext,
+        founderReplyExamples: [
+          {
+            customerMessage: "My parcel is late.",
+            founderReply: "I checked this personally and will update you tomorrow.",
+          },
+        ],
+      }),
+    ).toMatchObject({
+      founderReplyExamples: [
+        {
+          customerMessage: "My parcel is late.",
+          founderReply: "I checked this personally and will update you tomorrow.",
+        },
+      ],
+    });
+  });
+
+  it("rejects unbounded or undeclared founder reply example data", () => {
+    expect(() =>
+      assertAgentModelContext({
+        ...baseContext,
+        founderReplyExamples: Array.from({ length: 6 }, () => ({
+          customerMessage: "Question",
+          founderReply: "Reply",
+        })),
+      }),
+    ).toThrow("at most 5");
+    expect(() =>
+      assertAgentModelContext({
+        ...baseContext,
+        founderReplyExamples: [
+          { customerMessage: "Question", founderReply: "Reply", secret: "no" },
+        ],
+      } as never),
+    ).toThrow("disallowed field");
+    expect(() =>
+      assertAgentModelContext({
+        ...baseContext,
+        founderReplyExamples: [
+          { customerMessage: "Question", founderReply: "x".repeat(2_001) },
+        ],
+      }),
+    ).toThrow("exceeds 2000");
+  });
+
   it("rejects undeclared fields nested inside a safe tool result", () => {
     expect(() =>
       assertAgentSafeToolOutputs([

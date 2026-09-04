@@ -91,6 +91,7 @@ export const finish = internalMutation({
       threadId: args.payload.threadId,
       direction: "outbound",
       party: "support",
+      kind: "agent_reply",
       from: args.from,
       to: [args.payload.to],
       subject: args.payload.subject,
