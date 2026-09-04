@@ -254,10 +254,10 @@
 .railCard {
   display: grid;
   gap: 6px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 }
 
 .railCard small {
@@ -301,8 +301,8 @@
 
 .header {
   position: relative;
-  max-width: 940px;
-  padding: 0 0 38px;
+  max-width: 900px;
+  padding: 0 0 32px;
   border-bottom: 2px solid #171714;
 }
 
@@ -321,7 +321,7 @@
   border: 1px solid #171714;
   border-radius: 0;
   background: rgba(247, 244, 234, 0.92);
-  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.1);
+  box-shadow: none;
 }
 
 .statusBanner[data-tone="success"] {
@@ -346,18 +346,21 @@
 
 .stage {
   margin-top: 40px;
-  padding: clamp(22px, 3vw, 34px);
-  border: 1px solid #171714;
+  padding: clamp(24px, 3vw, 36px) 0 0;
+  border-top: 2px solid #171714;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
   border-radius: 0;
-  background: rgba(247, 244, 234, 0.9);
-  box-shadow: 8px 8px 0 rgba(23, 23, 20, 0.12);
+  background: transparent;
+  box-shadow: none;
 }
 
 .stageHeader {
-  max-width: 760px;
+  max-width: 780px;
   display: grid;
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 34px;
 }
 
 .stageHeader > p:first-child {
@@ -399,10 +402,11 @@
 .form,
 .list,
 .summaryCard {
-  border: 1px solid #171714;
+  border: 0;
+  border-top: 1px solid #171714;
   border-radius: 0;
-  background: #f7f4ea;
-  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.08);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: none;
 }
 
 .agentNote {
@@ -410,7 +414,7 @@
   gap: 8px;
   margin-bottom: 20px;
   padding: 18px;
-  border: 1px solid #2457ff;
+  border-left: 4px solid #2457ff;
   border-radius: 0;
   background: linear-gradient(135deg, rgba(36, 87, 255, 0.08), rgba(247, 244, 234, 0.96));
 }
@@ -435,8 +439,8 @@
 .missionCard {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  padding: 22px;
+  gap: 22px;
+  padding: 22px 0 0;
 }
 
 .missionCard small,
@@ -481,9 +485,9 @@
   gap: 10px;
   min-height: 180px;
   padding: 18px;
-  border: 1px solid #171714;
+  border: 1px solid rgba(23, 23, 20, 0.16);
   border-radius: 0;
-  background: rgba(236, 229, 213, 0.7);
+  background: rgba(255, 255, 255, 0.38);
   cursor: pointer;
 }
 
@@ -525,7 +529,7 @@
 .cardsGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 
 .cardsGrid {
@@ -536,7 +540,7 @@
 .summaryCard {
   display: grid;
   gap: 10px;
-  padding: 18px;
+  padding: 18px 0 0;
 }
 
 .summaryCard strong {
@@ -557,10 +561,13 @@
 }
 
 .foldout {
-  border: 1px solid #171714;
+  border-top: 1px solid #171714;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
   border-radius: 0;
-  background: #f7f4ea;
-  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.08);
+  background: transparent;
+  box-shadow: none;
 }
 
 .foldoutSummary {
@@ -568,7 +575,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
+  padding: 18px 0;
   cursor: pointer;
   list-style: none;
 }
@@ -606,11 +613,11 @@
 }
 
 .foldoutBody {
-  padding: 0 20px 20px;
+  padding: 0 0 20px;
 }
 
 .setupSection {
-  padding: 22px;
+  padding: 20px 0 0;
 }
 
 .setupSectionHeader {
@@ -631,7 +638,7 @@
 
 .inlineNotice {
   margin-top: 22px;
-  padding: 18px;
+  padding: 18px 0 0;
 }
 
 .inlineNotice strong {
@@ -670,9 +677,9 @@
   gap: 14px;
   margin-top: 24px;
   padding: 18px;
-  border: 1px solid #171714;
+  border-left: 4px solid #171714;
   border-radius: 0;
-  background: rgba(236, 229, 213, 0.72);
+  background: rgba(23, 23, 20, 0.04);
 }
 
 .checkpoint input {
@@ -704,7 +711,7 @@
 .connection,
 .form,
 .list {
-  padding: 22px;
+  padding: 20px 0 0;
 }
 
 .service {
@@ -921,8 +928,8 @@
 
 .list article,
 .list > p {
-  padding: 16px;
-  background: var(--paper);
+  padding: 16px 0;
+  background: transparent;
 }
 
 .list strong {
@@ -946,7 +953,7 @@
 .receiptCard {
   position: relative;
   overflow: hidden;
-  padding: 24px;
+  padding: 24px 0 0;
 }
 
 .receiptStamp {
@@ -971,9 +978,9 @@
 
 .receiptGrid div {
   padding: 14px;
-  border: 1px solid rgba(23, 23, 20, 0.1);
+  border-top: 1px solid rgba(23, 23, 20, 0.12);
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .receiptGrid dt {

@@ -36,7 +36,7 @@ export default function HumanAttentionInbox() {
             <h1>Delivery conversations, sorted.</h1>
           </div>
           <p>
-            See what WISMO answered automatically and step into the cases that still need a decision.
+            Automatic replies stay quiet. Unclear or risky cases surface here with the next safe action.
           </p>
         </header>
 

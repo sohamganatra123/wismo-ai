@@ -2,8 +2,12 @@
   --ink-soft: var(--text-tertiary);
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  background: var(--porcelain);
+  grid-template-columns: 300px minmax(0, 1fr);
+  color: #171714;
+  background-color: #f7f4ea;
+  background-image:
+    linear-gradient(rgba(247, 244, 234, 0.96), rgba(247, 244, 234, 0.96)),
+    url("/landing/paper-grain.webp");
 }
 .rail {
   position: sticky;
@@ -11,8 +15,12 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 30px 22px 24px;
-  border-right: 1px solid rgba(17, 19, 24, 0.08);
+  padding: 30px 24px 24px;
+  color: #f7f4ea;
+  border-right: 1px solid #2f3640;
+  background:
+    linear-gradient(rgba(23, 23, 20, 0.94), rgba(23, 23, 20, 0.96)),
+    url("/landing/paper-grain.webp");
 }
 .brand {
   display: flex;
@@ -21,12 +29,14 @@
   width: max-content;
   font: 800 13px var(--font-display);
   letter-spacing: 0.12em;
+  color: inherit;
 }
 .brand i {
   width: 18px;
   height: 18px;
-  border: 5px solid var(--amber);
+  border: 5px solid #2457ff;
   border-radius: 50%;
+  box-shadow: inset -3px 0 0 #ffb547;
 }
 .rail nav {
   display: grid;
@@ -40,25 +50,25 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  border-radius: 8px;
-  color: var(--slate);
+  border-radius: 0;
+  color: rgba(247, 244, 234, 0.74);
   font-size: 12px;
   font-weight: 650;
 }
 .rail nav a {
-  color: var(--carbon);
-  background: var(--paper);
-  box-shadow: 0 0 0 1px var(--border-soft);
+  color: white;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 4px 0 0 #2457ff;
 }
 .rail nav a:hover {
-  background: var(--attention-soft);
+  background: rgba(36, 87, 255, 0.1);
 }
 .rail nav b {
   min-width: 24px;
   padding: 4px 8px;
-  border-radius: 6px;
-  color: var(--attention);
-  background: var(--attention-soft);
+  border-radius: 999px;
+  color: #2457ff;
+  background: rgba(36, 87, 255, 0.14);
   font: 700 11px var(--font-data);
   text-align: center;
 }
@@ -71,9 +81,9 @@
   align-items: flex-start;
   margin-top: auto;
   padding: 14px;
-  border-radius: 10px;
-  background: var(--paper);
-  box-shadow: 0 0 0 1px rgba(17, 19, 24, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.04);
 }
 .boundary > i {
   flex: 0 0 auto;
@@ -81,8 +91,8 @@
   height: 8px;
   margin-top: 3px;
   border-radius: 50%;
-  background: var(--amber);
-  box-shadow: 0 0 0 4px var(--amber-soft);
+  background: #2457ff;
+  box-shadow: 0 0 0 4px rgba(36, 87, 255, 0.16);
 }
 .boundary div {
   display: grid;
@@ -92,69 +102,72 @@
   font-size: 12px;
 }
 .boundary small {
-  color: var(--slate);
+  color: rgba(247, 244, 234, 0.7);
   font-size: 12px;
   line-height: 1.45;
 }
 .workspace {
   min-width: 0;
-  padding: 72px clamp(28px, 6vw, 88px) 96px;
+  padding: 56px clamp(28px, 5vw, 88px) 96px;
 }
 .header {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 56px;
-  max-width: 1180px;
+  max-width: 1120px;
+  padding-bottom: 34px;
+  border-bottom: 2px solid #171714;
 }
 .eyebrow {
-  color: var(--attention);
+  color: #2457ff;
   font: 700 11px var(--font-data);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .header h1 {
   margin-top: 14px;
-  font: 770 clamp(36px, 4.2vw, 58px)/1 var(--font-display);
-  letter-spacing: -0.052em;
+  font: 820 clamp(38px, 4.8vw, 68px)/0.94 var(--font-display);
+  letter-spacing: -0.06em;
 }
 .header > p {
-  max-width: 390px;
-  padding-bottom: 5px;
-  color: var(--slate);
-  font-size: 13px;
-  line-height: 1.65;
+  max-width: 360px;
+  padding-bottom: 4px;
+  color: #4f4b42;
+  font-size: 15px;
+  line-height: 1.6;
 }
 .liveCases {
-  max-width: 1180px;
+  max-width: 1120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
-  margin-top: 48px;
-  padding: 32px;
-  border-radius: 16px;
-  background: var(--paper);
-  box-shadow: var(--shadow-card);
+  gap: 24px;
+  margin-top: 34px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .liveCases > header {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: 24px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid #d1c8b6;
 }
 .liveCases h2 {
-  margin-top: 8px;
-  font: 740 22px var(--font-display);
-  letter-spacing: -0.03em;
+  margin-top: 10px;
+  font: 760 28px/1 var(--font-display);
+  letter-spacing: -0.04em;
 }
 .liveDescription {
-  max-width: 600px;
-  margin-top: 8px;
-  color: var(--slate);
-  font-size: 13px;
-  line-height: 1.55;
+  max-width: 620px;
+  margin-top: 10px;
+  color: #5b594f;
+  font-size: 14px;
+  line-height: 1.6;
 }
 .liveCases button,
 .liveAction {
@@ -164,22 +177,24 @@
   justify-content: space-between;
   gap: 24px;
   padding: 0 16px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid #2457ff;
+  border-radius: 0;
   color: white;
-  background: var(--carbon);
+  background: #2457ff;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 4px 4px 0 rgba(23, 23, 20, 0.18);
 }
 .liveCases button:hover,
 .liveAction:hover {
-  background: #272b31;
-  box-shadow: 0 8px 20px rgba(17, 19, 24, 0.15);
+  background: #1747de;
+  box-shadow: 6px 6px 0 rgba(23, 23, 20, 0.2);
+  transform: translateY(-2px) rotate(-0.2deg);
 }
 .liveAction span {
-  color: var(--amber);
+  color: #dce5ff;
   font-size: 17px;
 }
 .liveCases button:disabled {
@@ -188,30 +203,31 @@
 .pollFeedback {
   width: 100%;
   margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  color: #6f4b18;
-  background: var(--amber-soft);
+  padding: 14px 16px;
+  border-left: 4px solid #2457ff;
+  color: #171714;
+  background: rgba(36, 87, 255, 0.08);
   font-size: 13px;
 }
 .receivedList {
   width: 100%;
   display: grid;
-  gap: 8px;
-  margin-top: 20px;
+  gap: 18px;
+  margin-top: 12px;
 }
 .receivedList > p {
   padding: 16px;
-  border-radius: 10px;
-  color: var(--slate);
-  background: var(--control-bg);
+  border-left: 4px solid #2457ff;
+  color: #4f4b42;
+  background: rgba(23, 23, 20, 0.04);
   font-size: 13px;
 }
 .receivedList article {
-  padding: 18px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 244, 234, 0.82));
-  box-shadow: inset 0 0 0 1px rgba(17, 19, 24, 0.06);
+  padding: 24px 0 0;
+  border-top: 1px solid #171714;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .receivedList article > header {
   display: flex;
@@ -224,35 +240,37 @@
   gap: 8px;
 }
 .receivedList small {
-  color: var(--slate);
+  color: #5b594f;
   font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
 .receivedList time {
-  color: var(--slate);
+  color: #5b594f;
   font: 700 12px var(--font-data);
   font-variant-numeric: tabular-nums;
 }
 .receivedList h3 {
-  margin-top: 16px;
-  font: 720 17px/1.3 var(--font-display);
-  letter-spacing: -0.02em;
+  max-width: 16ch;
+  margin-top: 14px;
+  font: 760 clamp(24px, 2.5vw, 34px)/0.98 var(--font-display);
+  letter-spacing: -0.05em;
 }
 .receivedList article > p {
   margin-top: 10px;
-  color: #434b55;
-  font-size: 13px;
-  line-height: 1.65;
+  max-width: 72ch;
+  color: #3f3d36;
+  font-size: 15px;
+  line-height: 1.7;
   white-space: pre-wrap;
 }
 .caseState {
   display: grid;
-  gap: 6px;
-  margin-top: 16px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  background: rgba(255, 255, 255, 0.7);
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 720px;
+  padding: 16px 18px;
+  border-left: 4px solid #171714;
+  background: rgba(23, 23, 20, 0.04);
 }
 .caseState small {
   font: 700 11px var(--font-data);
@@ -260,31 +278,31 @@
   text-transform: uppercase;
 }
 .caseState strong {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
 }
 .caseState p {
   margin: 0;
-  color: var(--slate);
-  font-size: 12px;
-  line-height: 1.55;
+  color: #5b594f;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .caseState[data-tone="done"] {
-  border-color: rgba(55, 124, 62, 0.18);
+  border-left-color: var(--jade);
   background: color-mix(in srgb, var(--jade-soft) 58%, white);
 }
 .caseState[data-tone="done"] small {
   color: var(--jade);
 }
 .caseState[data-tone="watch"] {
-  border-color: rgba(164, 95, 18, 0.16);
+  border-left-color: #a45f12;
   background: color-mix(in srgb, var(--amber-soft) 52%, white);
 }
 .caseState[data-tone="watch"] small {
   color: var(--attention);
 }
 .caseState[data-tone="danger"] {
-  border-color: rgba(186, 73, 73, 0.18);
+  border-left-color: var(--danger);
   background: color-mix(in srgb, #f4dfdf 78%, white);
 }
 .caseState[data-tone="danger"] small {
@@ -295,12 +313,12 @@
 }
 .shopifyEvidence {
   display: grid;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 10px;
-  background: var(--paper);
-  box-shadow: inset 0 0 0 1px var(--border-soft);
+  gap: 16px;
+  margin-top: 18px;
+  max-width: 840px;
+  padding: 18px 20px;
+  border-left: 1px solid #d1c8b6;
+  background: rgba(255, 255, 255, 0.42);
 }
 .shopifyEvidence > header {
   display: flex;
@@ -314,20 +332,21 @@
   gap: 4px;
 }
 .shopifyEvidence span {
-  color: var(--slate);
+  color: #5b594f;
   font-size: 12px;
 }
 .shopifyEvidence b {
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: 999px;
   color: var(--jade);
   background: var(--jade-soft);
   font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
 .shopifyEvidence > p {
-  color: var(--slate);
-  font-size: 12px;
+  color: #5b594f;
+  font-size: 13px;
+  line-height: 1.6;
 }
 .orderEvidence {
   display: grid;
@@ -348,8 +367,7 @@
   display: grid;
   gap: 0.65rem;
   padding: 1rem;
-  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
-  border-radius: 0.85rem;
+  border-left: 4px solid color-mix(in srgb, var(--amber) 62%, transparent);
   background: color-mix(in srgb, var(--amber) 8%, transparent);
 }
 
@@ -360,11 +378,11 @@
   display: grid;
   grid-template-columns: minmax(180px, 1.5fr) 1fr 1fr;
   gap: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--cloud);
+  padding-top: 14px;
+  border-top: 1px solid #d1c8b6;
 }
 .orderEvidence section strong {
-  font-size: 12px;
+  font-size: 13px;
   text-transform: capitalize;
 }
 .investigateButton {
@@ -375,7 +393,7 @@
   display: grid;
   gap: 12px;
   padding: 16px;
-  border-radius: 10px;
+  border-left: 4px solid var(--jade);
   background: var(--jade-soft);
 }
 .investigationResult > header {
@@ -395,7 +413,7 @@
 }
 .investigationFacts > div {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--paper);
 }
 .investigationResult blockquote {
@@ -415,8 +433,7 @@
   display: grid;
   gap: 12px;
   padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
-  border-radius: 10px;
+  border-left: 4px solid color-mix(in srgb, var(--amber) 50%, transparent);
   background: color-mix(in srgb, var(--amber) 8%, var(--paper));
 }
 .customerUpdate > header {
@@ -442,12 +459,11 @@
   display: grid;
   gap: 10px;
   padding: 16px;
-  border-radius: 10px;
+  border-left: 4px solid #d1c8b6;
   background: var(--control-bg);
-  box-shadow: inset 0 0 0 1px var(--border-soft);
 }
 .courierState p {
-  color: var(--slate);
+  color: #5b594f;
   font: 600 12px var(--font-data);
 }
 .courierState button,
@@ -461,21 +477,22 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 .receivedList dl div {
   display: grid;
   gap: 4px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--paper);
+  padding: 0;
+  background: transparent;
 }
 .receivedList dt {
-  color: var(--slate);
-  font-size: 12px;
+  color: #7a7568;
+  font-size: 11px;
+  text-transform: uppercase;
 }
 .receivedList dd {
-  font: 600 12px var(--font-data);
+  font: 600 11px var(--font-data);
+  color: #5b594f;
 }
 .liveCases {
   flex-wrap: wrap;
@@ -491,6 +508,7 @@
     grid-template-columns: auto 1fr;
     align-items: center;
     padding: 20px;
+    border-right: 0;
   }
   .rail nav {
     display: flex;
@@ -508,6 +526,7 @@
   }
   .header {
     display: block;
+    padding-bottom: 24px;
   }
   .header > p {
     margin-top: 18px;
@@ -533,6 +552,18 @@
     font-size: 38px;
   }
   .liveCases {
-    padding: 24px 18px;
+    margin-top: 28px;
+  }
+  .receivedList article {
+    padding-top: 18px;
+  }
+  .receivedList h3 {
+    max-width: none;
+    font-size: 28px;
+  }
+  .receivedList article > p,
+  .liveDescription,
+  .header > p {
+    font-size: 14px;
   }
 }
