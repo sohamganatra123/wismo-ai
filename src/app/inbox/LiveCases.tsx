@@ -5,6 +5,7 @@ import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { startTransition, useState } from "react";
 import FounderReplyComposer from "./FounderReplyComposer";
+import { messagesForCase, type InboxMessage } from "./liveCaseCompatibility";
 import styles from "./page.module.css";
 
 type ReceivedCase = {
@@ -26,19 +27,8 @@ type ReceivedCase = {
     | "closed";
   agentRunStatus: "queued" | "running" | "waiting" | "completed" | "failed" | "escalated" | null;
   customer: { name: string; email: string } | null;
-  canFounderReply: boolean;
-  messages: Array<{
-    id: string;
-    direction: "inbound" | "outbound";
-    party: "customer" | "courier" | "support";
-    kind: "customer" | "agent_clarification" | "agent_reply" | "founder_reply";
-    from: string;
-    to: string[];
-    subject: string;
-    text: string;
-    sentAt: number;
-    deliveryStatus: string | null;
-  }>;
+  canFounderReply?: boolean;
+  messages?: InboxMessage[];
   orders: Array<{
     id: string;
     name: string;
@@ -108,7 +98,7 @@ function messageSnippet(value: string) {
   return text.length > 96 ? `${text.slice(0, 93)}...` : text;
 }
 
-function statusLabel(status: ReceivedCase["status"], messages: ReceivedCase["messages"] = []) {
+function statusLabel(status: ReceivedCase["status"], messages: InboxMessage[] = []) {
   switch (status) {
     case "closed":
       return messages.some((message) => message.kind === "founder_reply")
@@ -131,7 +121,7 @@ function statusLabel(status: ReceivedCase["status"], messages: ReceivedCase["mes
   }
 }
 
-function messageLabel(message: ReceivedCase["messages"][number]) {
+function messageLabel(message: InboxMessage) {
   switch (message.kind) {
     case "agent_clarification":
       return "Clarification sent";
@@ -468,7 +458,8 @@ export default function LiveCases() {
         ) : (
           (() => {
             const selected = rows.find((item) => item.id === selectedCaseId) ?? rows[0];
-            const hasFounderReply = selected.messages.some(
+            const selectedMessages = messagesForCase(selected);
+            const hasFounderReply = selectedMessages.some(
               (message) => message.kind === "founder_reply",
             );
             return (
@@ -498,7 +489,7 @@ export default function LiveCases() {
                           <h3>{item.subject}</h3>
                           <p>{messageSnippet(item.text)}</p>
                           <div className={styles.threadMeta}>
-                            <small>{statusLabel(item.status, item.messages)}</small>
+                            <small>{statusLabel(item.status, messagesForCase(item))}</small>
                             {item.customer ? <span>Matched to {item.customer.name}</span> : null}
                           </div>
                         </div>
@@ -521,7 +512,7 @@ export default function LiveCases() {
 
                   <div className={styles.messageStack}>
                     <div className={styles.conversationThread} aria-label="Complete Gmail thread">
-                      {selected.messages.map((message) => (
+                      {selectedMessages.map((message) => (
                         <article
                           className={styles.threadMessage}
                           data-direction={message.direction}
