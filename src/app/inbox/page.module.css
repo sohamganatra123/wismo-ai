@@ -211,8 +211,7 @@
 }
 .receivedList {
   width: 100%;
-  display: grid;
-  gap: 18px;
+  display: block;
   margin-top: 12px;
 }
 .receivedList > p {
@@ -222,22 +221,156 @@
   background: rgba(23, 23, 20, 0.04);
   font-size: 13px;
 }
-.receivedList article {
-  padding: 24px 0 0;
-  border-top: 1px solid #171714;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+.threadShell {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.44fr) minmax(0, 0.56fr);
+  gap: 28px;
+  align-items: start;
 }
-.receivedList article > header {
+.threadList {
+  border-top: 1px solid #171714;
+}
+.threadRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 18px 0;
+  border: 0;
+  border-bottom: 1px solid #d1c8b6;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.threadRow[data-active="true"] {
+  background: rgba(36, 87, 255, 0.05);
+  box-shadow: inset 4px 0 0 #2457ff;
+}
+.threadAvatar {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #171714;
+  background: rgba(36, 87, 255, 0.12);
+  font: 700 12px var(--font-data);
+}
+.threadPreview {
+  min-width: 0;
+}
+.threadPreview header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.threadPreview header strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+}
+.threadPreview header time {
+  flex: 0 0 auto;
+}
+.threadPreview h3 {
+  max-width: none;
+  margin-top: 10px;
+  font: 720 20px/1.06 var(--font-display);
+  letter-spacing: -0.04em;
+}
+.threadPreview p {
+  margin-top: 8px;
+  color: #5b594f;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.threadMeta {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  padding-top: 2px;
+}
+.threadMeta small {
+  padding: 6px 8px;
+  color: #2457ff;
+  background: rgba(36, 87, 255, 0.1);
+  font: 700 10px var(--font-data);
+  text-transform: uppercase;
+}
+.threadMeta span {
+  max-width: 150px;
+  color: #7a7568;
+  font-size: 11px;
+  text-align: right;
+}
+.threadDetail {
+  border-top: 1px solid #171714;
+  padding-top: 18px;
+}
+.threadDetailHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #d1c8b6;
+}
+.threadDetailLabel {
+  color: #2457ff;
+  font: 700 11px var(--font-data);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.threadDetailHeader h3 {
+  max-width: 16ch;
+  margin-top: 10px;
+  font: 760 clamp(28px, 3vw, 40px)/0.98 var(--font-display);
+  letter-spacing: -0.05em;
+}
+.threadDetailMeta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  text-align: right;
+}
+.threadDetailMeta strong {
+  font-size: 14px;
+}
+.threadDetailMeta span {
+  color: #7a7568;
+  font: 700 11px var(--font-data);
+}
+.messageStack {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+.messageBubble {
+  max-width: 760px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.46);
+  border-left: 4px solid #171714;
+}
+.messageBubble > header {
   display: flex;
   align-items: start;
   justify-content: space-between;
   gap: 16px;
 }
-.receivedList article > header div {
+.messageBubble > header div {
   display: grid;
-  gap: 8px;
+  gap: 4px;
+}
+.messageBubble p {
+  margin-top: 14px;
+  color: #3f3d36;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 .receivedList small {
   color: #5b594f;
@@ -532,12 +665,27 @@
     margin-top: 18px;
   }
   .liveCases > header,
-  .receivedList article > header,
+  .messageBubble > header,
   .shopifyEvidence > header,
   .customerUpdate > header,
   .investigationResult > header {
     display: grid;
     gap: 12px;
+  }
+  .threadShell {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .threadMeta {
+    justify-items: start;
+  }
+  .threadDetailHeader {
+    display: grid;
+    gap: 14px;
+  }
+  .threadDetailMeta {
+    justify-items: start;
+    text-align: left;
   }
 }
 @media (max-width: 520px) {
@@ -554,14 +702,20 @@
   .liveCases {
     margin-top: 28px;
   }
-  .receivedList article {
-    padding-top: 18px;
+  .threadRow {
+    grid-template-columns: 40px minmax(0, 1fr);
   }
+  .threadMeta {
+    grid-column: 2;
+    justify-items: start;
+  }
+  .threadDetailHeader h3,
+  .threadPreview h3,
   .receivedList h3 {
     max-width: none;
     font-size: 28px;
   }
-  .receivedList article > p,
+  .messageBubble p,
   .liveDescription,
   .header > p {
     font-size: 14px;

@@ -65,6 +65,42 @@ function formatInboxTime(value: number) {
   }).format(value);
 }
 
+function senderLabel(value: string) {
+  const match = value.match(/^(.*?)\s*<.+>$/);
+  return match?.[1]?.trim() || value;
+}
+
+function senderInitial(value: string) {
+  return senderLabel(value).trim().charAt(0).toUpperCase() || "?";
+}
+
+function messageSnippet(value: string) {
+  const text = value.replace(/\s+/g, " ").trim();
+  if (!text) return "(empty message)";
+  return text.length > 96 ? `${text.slice(0, 93)}...` : text;
+}
+
+function statusLabel(status: ReceivedCase["status"]) {
+  switch (status) {
+    case "closed":
+      return "Auto-replied";
+    case "order_needed":
+      return "Clarifying";
+    case "identity_needed":
+      return "Identity check";
+    case "awaiting_approval":
+      return "Needs approval";
+    case "awaiting_courier":
+      return "Waiting on courier";
+    case "human_attention":
+      return "Human review";
+    case "investigating":
+      return "Investigating";
+    default:
+      return "New";
+  }
+}
+
 function CaseState({
   status,
   hasCustomer,
@@ -239,6 +275,7 @@ export default function LiveCases() {
   const [investigatingCase, setInvestigatingCase] = useState<string | null>(null);
   const [investigations] = useState<Record<string, InvestigationEvidence>>({});
   const [feedback, setFeedback] = useState("");
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   async function pollNow() {
     setWorking(true);
     setFeedback("");
@@ -378,197 +415,251 @@ export default function LiveCases() {
             poll.
           </p>
         ) : (
-          rows.map((item) => (
-            <article key={item.id}>
-              <header>
-                <div>
-                  <small>From</small>
-                  <strong>{item.from}</strong>
-                </div>
-                <time>{formatInboxTime(item.createdAt)}</time>
-              </header>
-              <h3>{item.subject}</h3>
-              <p>{item.text || "(empty message)"}</p>
-              <CaseState status={item.status} hasCustomer={Boolean(item.customer)} />
-              {item.agentRunStatus === "failed" ? (
-                <button
-                  className={styles.investigateButton}
-                  onClick={() => runInvestigation(item.id)}
-                  disabled={investigatingCase === item.id}
-                >
-                  {investigatingCase === item.id ? "Retrying…" : "Retry failed agent"}
-                </button>
-              ) : null}
-              <div className={styles.shopifyEvidence}>
-                {item.customer ? (
-                  <>
-                    <header>
-                      <div>
-                        <small>Exact Shopify match</small>
-                        <strong>{item.customer.name}</strong>
-                        <span>{item.customer.email}</span>
-                      </div>
-                      <b>{item.orders.length} active</b>
-                    </header>
-                    {item.orders.length ? (
-                      <>
-                        <div className={styles.orderEvidence}>
-                          {item.orders.map((order) => (
-                            <section key={order.id}>
-                              <div>
-                                <strong>{order.name}</strong>
-                                <span>{order.lineItems.join(", ")}</span>
-                              </div>
-                              <div>
-                                <small>Fulfillment</small>
-                                <strong>
-                                  {order.fulfillmentStatus.replaceAll("_", " ")}
-                                </strong>
-                              </div>
-                              <div>
-                                <small>Tracking</small>
-                                <strong>
-                                  {order.trackingNumber ?? "Not added"}
-                                </strong>
-                              </div>
-                            </section>
-                          ))}
+          (() => {
+            const selected = rows.find((item) => item.id === selectedCaseId) ?? rows[0];
+            return (
+              <div className={styles.threadShell}>
+                <div className={styles.threadList} role="list" aria-label="Email threads">
+                  {rows.map((item) => {
+                    const active = item.id === selected.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={styles.threadRow}
+                        data-active={active}
+                        onClick={() => setSelectedCaseId(item.id)}
+                      >
+                        <span className={styles.threadAvatar} aria-hidden="true">
+                          {senderInitial(item.from)}
+                        </span>
+                        <div className={styles.threadPreview}>
+                          <header>
+                            <strong>{senderLabel(item.from)}</strong>
+                            <time>{formatInboxTime(item.createdAt)}</time>
+                          </header>
+                          <h3>{item.subject}</h3>
+                          <p>{messageSnippet(item.text)}</p>
                         </div>
-                        {item.orders.length !== 1 ? (
-                          <p>Select one order before running the investigation.</p>
-                        ) : item.agentRunStatus !== "failed" ? (
-                          <p>WISMO is investigating this case automatically.</p>
-                        ) : null}
-                        {investigations[item.id] ? (
-                          <section className={styles.investigationResult} aria-live="polite">
-                            <header>
-                              <div>
-                                <small>Investigation complete</small>
-                                <strong>{investigations[item.id].order.name}</strong>
-                              </div>
-                              <time>{new Date(investigations[item.id].collectedAt).toLocaleTimeString()}</time>
-                            </header>
-                            <div className={styles.investigationFacts}>
-                              <div>
-                                <small>Previous emails</small>
-                                <strong>{investigations[item.id].previousMessages.length}</strong>
-                              </div>
-                              <div>
-                                <small>Fulfillment</small>
-                                <strong>{investigations[item.id].order.fulfillmentStatus.replaceAll("_", " ")}</strong>
-                              </div>
-                              <TrackingFact tracking={investigations[item.id].latestTracking} />
+                        <div className={styles.threadMeta}>
+                          <small>{statusLabel(item.status)}</small>
+                          <span>{item.customer ? item.customer.name : "No match yet"}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <article className={styles.threadDetail}>
+                  <header className={styles.threadDetailHeader}>
+                    <div>
+                      <p className={styles.threadDetailLabel}>Conversation</p>
+                      <h3>{selected.subject}</h3>
+                    </div>
+                    <div className={styles.threadDetailMeta}>
+                      <strong>{senderLabel(selected.from)}</strong>
+                      <span>{formatInboxTime(selected.createdAt)}</span>
+                    </div>
+                  </header>
+
+                  <div className={styles.messageStack}>
+                    <section className={styles.messageBubble}>
+                      <header>
+                        <div>
+                          <strong>{senderLabel(selected.from)}</strong>
+                          <small>{selected.from}</small>
+                        </div>
+                        <time>{formatInboxTime(selected.createdAt)}</time>
+                      </header>
+                      <p>{selected.text || "(empty message)"}</p>
+                    </section>
+
+                    <CaseState status={selected.status} hasCustomer={Boolean(selected.customer)} />
+
+                    {selected.agentRunStatus === "failed" ? (
+                      <button
+                        className={styles.investigateButton}
+                        onClick={() => runInvestigation(selected.id)}
+                        disabled={investigatingCase === selected.id}
+                      >
+                        {investigatingCase === selected.id ? "Retrying…" : "Retry failed agent"}
+                      </button>
+                    ) : null}
+
+                    <div className={styles.shopifyEvidence}>
+                      {selected.customer ? (
+                        <>
+                          <header>
+                            <div>
+                              <small>Exact Shopify match</small>
+                              <strong>{selected.customer.name}</strong>
+                              <span>{selected.customer.email}</span>
                             </div>
-                            {investigations[item.id].previousMessages.map((message) => (
-                              <blockquote key={message.id}>
-                                <strong>{message.subject}</strong>
-                                <p>{message.text}</p>
-                              </blockquote>
-                            ))}
-                          </section>
-                        ) : null}
-                        {item.customerUpdate ? (
-                          <section className={styles.customerUpdate}>
-                            <header>
-                              <div>
-                                <small>Approval required · Customer update</small>
-                                <strong>{item.customerUpdate.subject}</strong>
-                                <span>To {item.customerUpdate.to}</span>
+                            <b>{selected.orders.length} active</b>
+                          </header>
+                          {selected.orders.length ? (
+                            <>
+                              <div className={styles.orderEvidence}>
+                                {selected.orders.map((order) => (
+                                  <section key={order.id}>
+                                    <div>
+                                      <strong>{order.name}</strong>
+                                      <span>{order.lineItems.join(", ")}</span>
+                                    </div>
+                                    <div>
+                                      <small>Fulfillment</small>
+                                      <strong>
+                                        {order.fulfillmentStatus.replaceAll("_", " ")}
+                                      </strong>
+                                    </div>
+                                    <div>
+                                      <small>Tracking</small>
+                                      <strong>
+                                        {order.trackingNumber ?? "Not added"}
+                                      </strong>
+                                    </div>
+                                  </section>
+                                ))}
                               </div>
-                              <time>{new Date(item.customerUpdate.proposedAt).toLocaleTimeString()}</time>
-                            </header>
-                            <p>{item.customerUpdate.text}</p>
-                            <button
-                              onClick={() => sendCustomerUpdate(item.customerUpdate!.approvalId)}
-                              disabled={
-                                sendingUpdate === item.customerUpdate.approvalId ||
-                                item.customerUpdate.status !== "pending"
-                              }
-                            >
-                              {sendingUpdate === item.customerUpdate.approvalId
-                                ? "Sending…"
-                                : item.customerUpdate.status === "completed"
-                                  ? "Sent"
-                                  : item.customerUpdate.status === "failed"
-                                    ? "Send failed"
-                                    : "Approve and send"}
-                            </button>
-                          </section>
-                        ) : null}
-                        {!item.customerUpdate && !item.courierState ? (
-                          <button className={styles.investigateButton} onClick={() => waitForCourier(item.id)} disabled={courierWork === item.id}>
-                            {courierWork === item.id ? "Opening courier case…" : "Withhold answer and contact courier"}
-                          </button>
-                        ) : null}
-                        {item.courierState ? (
-                          <section className={styles.courierState}>
-                            <small>Matched courier · {item.courierState.contactName}</small>
-                            <strong>{item.courierState.waiting ? "Waiting for reply" : "Reply matched to this case"}</strong>
-                            {item.courierState.replyText ? <p>{item.courierState.replyText}</p> : null}
-                            {item.courierState.waiting ? (
-                              <button onClick={() => simulateCourierReply(item.id)} disabled={courierWork === item.id}>
-                                {courierWork === item.id ? "Receiving…" : "Simulate confirmed courier reply"}
+                              {selected.orders.length !== 1 ? (
+                                <p>Select one order before running the investigation.</p>
+                              ) : selected.agentRunStatus !== "failed" ? (
+                                <p>WISMO is investigating this case automatically.</p>
+                              ) : null}
+                              {investigations[selected.id] ? (
+                                <section className={styles.investigationResult} aria-live="polite">
+                                  <header>
+                                    <div>
+                                      <small>Investigation complete</small>
+                                      <strong>{investigations[selected.id].order.name}</strong>
+                                    </div>
+                                    <time>{new Date(investigations[selected.id].collectedAt).toLocaleTimeString()}</time>
+                                  </header>
+                                  <div className={styles.investigationFacts}>
+                                    <div>
+                                      <small>Previous emails</small>
+                                      <strong>{investigations[selected.id].previousMessages.length}</strong>
+                                    </div>
+                                    <div>
+                                      <small>Fulfillment</small>
+                                      <strong>{investigations[selected.id].order.fulfillmentStatus.replaceAll("_", " ")}</strong>
+                                    </div>
+                                    <TrackingFact tracking={investigations[selected.id].latestTracking} />
+                                  </div>
+                                  {investigations[selected.id].previousMessages.map((message) => (
+                                    <blockquote key={message.id}>
+                                      <strong>{message.subject}</strong>
+                                      <p>{message.text}</p>
+                                    </blockquote>
+                                  ))}
+                                </section>
+                              ) : null}
+                              {selected.customerUpdate ? (
+                                <section className={styles.customerUpdate}>
+                                  <header>
+                                    <div>
+                                      <small>Approval required · Customer update</small>
+                                      <strong>{selected.customerUpdate.subject}</strong>
+                                      <span>To {selected.customerUpdate.to}</span>
+                                    </div>
+                                    <time>{new Date(selected.customerUpdate.proposedAt).toLocaleTimeString()}</time>
+                                  </header>
+                                  <p>{selected.customerUpdate.text}</p>
+                                  <button
+                                    onClick={() => sendCustomerUpdate(selected.customerUpdate!.approvalId)}
+                                    disabled={
+                                      sendingUpdate === selected.customerUpdate.approvalId ||
+                                      selected.customerUpdate.status !== "pending"
+                                    }
+                                  >
+                                    {sendingUpdate === selected.customerUpdate.approvalId
+                                      ? "Sending…"
+                                      : selected.customerUpdate.status === "completed"
+                                        ? "Sent"
+                                        : selected.customerUpdate.status === "failed"
+                                          ? "Send failed"
+                                          : "Approve and send"}
+                                  </button>
+                                </section>
+                              ) : null}
+                              {!selected.customerUpdate && !selected.courierState ? (
+                                <button className={styles.investigateButton} onClick={() => waitForCourier(selected.id)} disabled={courierWork === selected.id}>
+                                  {courierWork === selected.id ? "Opening courier case…" : "Withhold answer and contact courier"}
+                                </button>
+                              ) : null}
+                              {selected.courierState ? (
+                                <section className={styles.courierState}>
+                                  <small>Matched courier · {selected.courierState.contactName}</small>
+                                  <strong>{selected.courierState.waiting ? "Waiting for reply" : "Reply matched to this case"}</strong>
+                                  {selected.courierState.replyText ? <p>{selected.courierState.replyText}</p> : null}
+                                  {selected.courierState.waiting ? (
+                                    <button onClick={() => simulateCourierReply(selected.id)} disabled={courierWork === selected.id}>
+                                      {courierWork === selected.id ? "Receiving…" : "Simulate confirmed courier reply"}
+                                    </button>
+                                  ) : null}
+                                </section>
+                              ) : null}
+                              {selected.shopifyUpdate ? (
+                                <section className={styles.shopifyUpdate}>
+                                  <small>Approval required · Shopify order note</small>
+                                  <strong>{selected.shopifyUpdate.note}</strong>
+                                  <button onClick={() => applyShopifyNote(selected.shopifyUpdate!.approvalId)} disabled={shopifyWork === selected.shopifyUpdate.approvalId || selected.shopifyUpdate.status !== "pending"}>
+                                    {shopifyWork === selected.shopifyUpdate.approvalId ? "Applying…" : selected.shopifyUpdate.status === "completed" ? "Applied" : selected.shopifyUpdate.status === "failed" ? "Apply failed" : "Approve Shopify update"}
+                                  </button>
+                                </section>
+                              ) : null}
+                            </>
+                          ) : (
+                            <p>No active Shopify orders found for this customer.</p>
+                          )}
+                        </>
+                      ) : selected.status === "identity_needed" ? (
+                        <div className={styles.identityRequest}>
+                          <strong>No exact Shopify customer match</strong>
+                          <p>No customer or order data was shown.</p>
+                          {selected.identityRequest ? (
+                            <section>
+                              <small>Approval required · To {selected.identityRequest.to}</small>
+                              <strong>{selected.identityRequest.subject}</strong>
+                              <p>{selected.identityRequest.text}</p>
+                              <button
+                                onClick={() => sendIdentityRequest(selected.identityRequest!.approvalId)}
+                                disabled={
+                                  sendingApproval === selected.identityRequest.approvalId ||
+                                  selected.identityRequest.status !== "pending"
+                                }
+                              >
+                                {sendingApproval === selected.identityRequest.approvalId
+                                  ? "Sending…"
+                                  : selected.identityRequest.status === "completed"
+                                    ? "Sent"
+                                    : selected.identityRequest.status === "failed"
+                                      ? "Send failed"
+                                      : "Approve and send"}
                               </button>
-                            ) : null}
-                          </section>
-                        ) : null}
-                        {item.shopifyUpdate ? (
-                          <section className={styles.shopifyUpdate}>
-                            <small>Approval required · Shopify order note</small>
-                            <strong>{item.shopifyUpdate.note}</strong>
-                            <button onClick={() => applyShopifyNote(item.shopifyUpdate!.approvalId)} disabled={shopifyWork === item.shopifyUpdate.approvalId || item.shopifyUpdate.status !== "pending"}>
-                              {shopifyWork === item.shopifyUpdate.approvalId ? "Applying…" : item.shopifyUpdate.status === "completed" ? "Applied" : item.shopifyUpdate.status === "failed" ? "Apply failed" : "Approve Shopify update"}
-                            </button>
-                          </section>
-                        ) : null}
-                      </>
-                    ) : (
-                      <p>No active Shopify orders found for this customer.</p>
-                    )}
-                  </>
-                ) : item.status === "identity_needed" ? (
-                  <div className={styles.identityRequest}>
-                    <strong>No exact Shopify customer match</strong>
-                    <p>No customer or order data was shown.</p>
-                    {item.identityRequest ? (
-                      <section>
-                        <small>Approval required · To {item.identityRequest.to}</small>
-                        <strong>{item.identityRequest.subject}</strong>
-                        <p>{item.identityRequest.text}</p>
-                        <button
-                          onClick={() => sendIdentityRequest(item.identityRequest!.approvalId)}
-                          disabled={
-                            sendingApproval === item.identityRequest.approvalId ||
-                            item.identityRequest.status !== "pending"
-                          }
-                        >
-                          {sendingApproval === item.identityRequest.approvalId
-                            ? "Sending…"
-                            : item.identityRequest.status === "completed"
-                              ? "Sent"
-                              : item.identityRequest.status === "failed"
-                                ? "Send failed"
-                                : "Approve and send"}
-                        </button>
-                      </section>
-                    ) : (
-                      <p>A safe reply could not be prepared.</p>
-                    )}
+                            </section>
+                          ) : (
+                            <p>A safe reply could not be prepared.</p>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <dl>
+                      <div>
+                        <dt>Gmail conversation ID</dt>
+                        <dd>{selected.threadId}</dd>
+                      </div>
+                      <div>
+                        <dt>Gmail message ID</dt>
+                        <dd>{selected.providerId}</dd>
+                      </div>
+                    </dl>
                   </div>
-                ) : null}
+                </article>
               </div>
-              <dl>
-                <div>
-                  <dt>Gmail conversation ID</dt>
-                  <dd>{item.threadId}</dd>
-                </div>
-                <div>
-                  <dt>Gmail message ID</dt>
-                  <dd>{item.providerId}</dd>
-                </div>
-              </dl>
-            </article>
-          ))
+            );
+          })()
         )}
       </div>
     </section>
