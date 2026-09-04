@@ -7,6 +7,9 @@ import {
   identityRequestHeaders,
   type IdentityRequestPayload,
 } from "./domain/identityRequest";
+import { isOrderSelectionRequestPayload } from "./domain/orderSelectionRequest";
+import { recordCaseEvent } from "./lib/caseEvents";
+import { escalateCase } from "./lib/escalations";
 import { decryptCredentials } from "./security/credentials";
 
 type Tokens = { refresh_token?: string };
@@ -37,7 +40,14 @@ export const claim = internalMutation({
       .unique();
     if (!profile) throw new Error("Manager access required");
     const approval = await ctx.db.get(args.approvalId);
-    const payload = claimableIdentityRequest(approval);
+    const payload = approval?.payload && isOrderSelectionRequestPayload(approval.payload)
+      ? (() => {
+          if (approval.kind !== "customer_email" || approval.status !== "pending") {
+            throw new Error("This order-selection request was already handled");
+          }
+          return approval.payload;
+        })()
+      : claimableIdentityRequest(approval);
     await ctx.db.patch(args.approvalId, {
       status: "executing",
       decidedAt: Date.now(),
@@ -81,14 +91,15 @@ export const finish = internalMutation({
     });
     await ctx.db.patch(args.approvalId, { status: "completed", executedAt: now });
     await ctx.db.patch(approval.caseId, { firstActionAt: now, updatedAt: now });
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId: approval.caseId,
       type: "identity_request_sent",
-      summary: "Sent the approved checkout email and order number request.",
+      summary: args.payload.actionKey.startsWith("order-selection:")
+        ? "Sent the approved safe order-selection request."
+        : "Sent the approved checkout email and order number request.",
       contextSource: "gmail",
       toolName: "gmail.messages.send",
       toolResult: { providerId: args.providerId },
-      createdAt: now,
     });
   },
 });
@@ -99,13 +110,13 @@ export const fail = internalMutation({
     const approval = await ctx.db.get(args.approvalId);
     if (!approval || approval.status !== "executing") return;
     await ctx.db.patch(args.approvalId, { status: "failed", error: args.error });
-    await ctx.db.insert("events", {
+    await escalateCase(ctx, {
       caseId: approval.caseId,
-      type: "identity_request_failed",
-      summary: "The approved identity request could not be sent.",
+      escalationReason: "Approved identity request failed to send",
+      recommendation: "Review Gmail access, then resend the checkout email and order number request safely.",
       contextSource: "gmail",
       error: args.error,
-      createdAt: Date.now(),
+      actorUserId: approval.decidedBy,
     });
   },
 });

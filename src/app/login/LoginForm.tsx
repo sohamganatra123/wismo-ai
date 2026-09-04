@@ -14,12 +14,12 @@ export default function LoginForm() {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => { if (isAuthenticated) router.replace("/inbox"); }, [isAuthenticated, router]);
+  useEffect(() => { if (isAuthenticated) router.replace("/setup"); }, [isAuthenticated, router]);
 
   async function logIn() {
     setWorking(true);
     setError("");
-    try { await signIn("google", { redirectTo: "/inbox" }); }
+    try { await signIn("google", { redirectTo: "/setup" }); }
     catch { setError("Google login could not start. Try again."); setWorking(false); }
   }
 
@@ -32,7 +32,7 @@ export default function LoginForm() {
         <p>Log in with the Google account connected to your Wismo workspace.</p>
         <button className={styles.primary} type="button" onClick={logIn} disabled={working || isLoading}>{working || isLoading ? "Opening Wismo…" : "Log in with Google"}<span>↗</span></button>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
-        <Link className={styles.secondary} href="/connect">Connecting a new mailbox?</Link>
+        <Link className={styles.secondary} href="/setup">Need workspace setup?</Link>
         <small>Customer messages and Shopify changes require manager approval in v1.</small>
       </section>
     </main>

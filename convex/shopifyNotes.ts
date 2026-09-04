@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, internalQuery } from "./_generated/server";
 import { claimableShopifyNote } from "./domain/shopifyNote";
+import { recordCaseEvent } from "./lib/caseEvents";
+import { escalateCase } from "./lib/escalations";
 import { decryptCredentials } from "./security/credentials";
 
 type ShopifyCredentials = { accessToken: string };
@@ -39,7 +41,7 @@ export const finish = internalMutation({
     if (!approval || approval.status !== "executing") return;
     const now = Date.now();
     await ctx.db.patch(args.approvalId, { status: "completed", executedAt: now });
-    await ctx.db.insert("events", { caseId: approval.caseId, type: "shopify_courier_note_added", summary: "Added the approved courier update to the Shopify order note.", contextSource: "shopify", toolName: "orderUpdate", actorUserId: approval.decidedBy, createdAt: now });
+    await recordCaseEvent(ctx, { caseId: approval.caseId, type: "shopify_courier_note_added", summary: "Added the approved courier update to the Shopify order note.", contextSource: "shopify", toolName: "orderUpdate", actorUserId: approval.decidedBy });
   },
 });
 
@@ -49,7 +51,14 @@ export const fail = internalMutation({
     const approval = await ctx.db.get(args.approvalId);
     if (!approval || approval.status !== "executing") return;
     await ctx.db.patch(args.approvalId, { status: "failed", error: args.error });
-    await ctx.db.insert("events", { caseId: approval.caseId, type: "shopify_courier_note_failed", summary: "The approved Shopify order note could not be added.", contextSource: "shopify", error: args.error, createdAt: Date.now() });
+    await escalateCase(ctx, {
+      caseId: approval.caseId,
+      escalationReason: "Approved Shopify order note failed",
+      recommendation: "Review Shopify access and apply the courier update note manually if needed.",
+      contextSource: "shopify",
+      error: args.error,
+      actorUserId: approval.decidedBy,
+    });
   },
 });
 

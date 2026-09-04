@@ -15,6 +15,7 @@ type ReceivedCase = {
   subject: string;
   text: string;
   status: "received" | "investigating" | "identity_needed" | "order_needed" | "awaiting_approval" | "awaiting_courier";
+  agentRunStatus: "queued" | "running" | "waiting" | "completed" | "failed" | "escalated" | null;
   customer: { name: string; email: string } | null;
   orders: Array<{
     id: string;
@@ -103,11 +104,11 @@ const approveIdentityRef = makeFunctionReference<
   { approvalId: string },
   { status: "sent" }
 >("identityRequests:approveAndSend");
-const investigateRef = makeFunctionReference<
+const retryAgentRef = makeFunctionReference<
   "mutation",
   { caseId: string },
-  InvestigationEvidence
->("investigations:run");
+  string
+>("agentRuns:retryFailed");
 const approveCustomerUpdateRef = makeFunctionReference<
   "action",
   { approvalId: string },
@@ -122,7 +123,7 @@ export default function LiveCases() {
   const rows = useQuery(listRef, isAuthenticated ? {} : "skip");
   const poll = useAction(pollRef);
   const approveIdentity = useAction(approveIdentityRef);
-  const investigate = useMutation(investigateRef);
+  const retryAgent = useMutation(retryAgentRef);
   const approveCustomerUpdate = useAction(approveCustomerUpdateRef);
   const prepareCourier = useMutation(prepareCourierRef);
   const receiveCourier = useMutation(receiveCourierRef);
@@ -133,7 +134,7 @@ export default function LiveCases() {
   const [courierWork, setCourierWork] = useState<string | null>(null);
   const [shopifyWork, setShopifyWork] = useState<string | null>(null);
   const [investigatingCase, setInvestigatingCase] = useState<string | null>(null);
-  const [investigations, setInvestigations] = useState<Record<string, InvestigationEvidence>>({});
+  const [investigations] = useState<Record<string, InvestigationEvidence>>({});
   const [feedback, setFeedback] = useState("");
   async function pollNow() {
     setWorking(true);
@@ -169,9 +170,8 @@ export default function LiveCases() {
     setInvestigatingCase(caseId);
     setFeedback("");
     try {
-      const evidence = await investigate({ caseId });
-      setInvestigations((current) => ({ ...current, [caseId]: evidence }));
-      setFeedback("Investigation collected the case's safe Gmail, Shopify, fulfillment, and tracking evidence.");
+      await retryAgent({ caseId });
+      setFeedback("The failed agent run was queued for a safe retry.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Investigation failed");
     } finally {
@@ -243,7 +243,7 @@ export default function LiveCases() {
             received from your connected test inbox.
           </p>
         </div>
-        <Link className={styles.liveAction} href="/connect">
+        <Link className={styles.liveAction} href="/login">
           Sign in to WISMO <span>→</span>
         </Link>
       </section>
@@ -287,6 +287,15 @@ export default function LiveCases() {
               </header>
               <h3>{item.subject}</h3>
               <p>{item.text || "(empty message)"}</p>
+              {item.agentRunStatus === "failed" ? (
+                <button
+                  className={styles.investigateButton}
+                  onClick={() => runInvestigation(item.id)}
+                  disabled={investigatingCase === item.id}
+                >
+                  {investigatingCase === item.id ? "Retrying…" : "Retry failed agent"}
+                </button>
+              ) : null}
               <div className={styles.shopifyEvidence}>
                 {item.customer ? (
                   <>
@@ -322,17 +331,11 @@ export default function LiveCases() {
                             </section>
                           ))}
                         </div>
-                        {item.orders.length === 1 ? (
-                          <button
-                            className={styles.investigateButton}
-                            onClick={() => runInvestigation(item.id)}
-                            disabled={investigatingCase === item.id}
-                          >
-                            {investigatingCase === item.id ? "Investigating…" : "Run investigation"}
-                          </button>
-                        ) : (
+                        {item.orders.length !== 1 ? (
                           <p>Select one order before running the investigation.</p>
-                        )}
+                        ) : item.agentRunStatus !== "failed" ? (
+                          <p>WISMO is investigating this case automatically.</p>
+                        ) : null}
                         {investigations[item.id] ? (
                           <section className={styles.investigationResult} aria-live="polite">
                             <header>

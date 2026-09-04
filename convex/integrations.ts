@@ -64,9 +64,9 @@ export const gmailOAuthCallback = httpAction(async (ctx, request) => {
     if (!profileResponse.ok || !profile.emailAddress) throw new Error("Could not read the connected Gmail account");
     const encryptedCredentials = await encryptCredentials(tokens, required("INTEGRATION_ENCRYPTION_KEY"));
     await ctx.runMutation(internal.integrationData.saveIntegration, { kind: "gmail", accountLabel: profile.emailAddress, encryptedCredentials, connectedBy: userId, cursor: profile.historyId });
-    return Response.redirect(`${siteUrl}/connect?gmail=connected`, 302);
+    return Response.redirect(`${siteUrl}/setup?gmail=connected`, 302);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Gmail connection failed";
-    return Response.redirect(`${siteUrl}/connect?gmail=error&reason=${encodeURIComponent(message)}`, 302);
+    return Response.redirect(`${siteUrl}/setup?gmail=error&reason=${encodeURIComponent(message)}`, 302);
   }
 });

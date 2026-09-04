@@ -11,6 +11,7 @@ export function LandingNav({ cta, secondaryCta }: Props) {
       <Link className={styles.navBrand} href="/" aria-label="Wismo.ai home">WISMO.ai</Link>
       <nav aria-label="Main navigation">
         <Link className={styles.navHow} href="#how-it-works">How it works</Link>
+        <Link className={styles.navHow} href="/prototype">Try prototype</Link>
         <Link className={styles.loginCta} href={secondaryCta.href}>{secondaryCta.label}</Link>
         <TrackedCta className={styles.navPrimary} href={cta.href} location="navigation">
           {cta.label}<span aria-hidden="true">↗</span>

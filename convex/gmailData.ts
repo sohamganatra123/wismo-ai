@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { recordCaseEvent } from "./lib/caseEvents";
 
 export const getConnection = internalQuery({
   args: {},
@@ -112,12 +113,11 @@ export const prepareInbound = internalMutation({
         updatedAt: now,
       });
       await ctx.db.patch(messageId, { caseId });
-      await ctx.db.insert("events", {
+      await recordCaseEvent(ctx, {
         caseId,
         type: "email_received",
         summary: `Received Gmail message “${args.subject}”`,
         contextSource: "gmail",
-        createdAt: now,
       });
       await ctx.scheduler.runAfter(0, internal.shopifyMatching.matchCase, {
         caseId,
@@ -147,13 +147,12 @@ export const prepareInbound = internalMutation({
       updatedAt: now,
     });
     await ctx.db.patch(messageId, { caseId });
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId,
       type: "clarification_pending",
       summary:
         "The delivery request was empty or unclear; a safe clarification is pending.",
       contextSource: "gmail",
-      createdAt: now,
     });
     return { action: "clarification" as const, caseId };
   },
@@ -190,13 +189,12 @@ export const completeClarification = internalMutation({
       deliveryStatus: "sent",
       caseId: args.caseId,
     });
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId: args.caseId,
       type: "clarification_sent",
       summary:
         "Asked the customer for their order number and delivery question.",
       contextSource: "gmail",
-      createdAt: now,
     });
     await ctx.db.patch(args.caseId, { firstActionAt: now, updatedAt: now });
   },
@@ -222,6 +220,7 @@ export const listReceivedCases = query({
             "order_needed",
             "awaiting_approval",
             "awaiting_courier",
+            "human_attention",
           ] as const
         ).map((status) =>
           ctx.db
@@ -241,14 +240,20 @@ export const listReceivedCases = query({
         const customer = item.customerId
           ? await ctx.db.get(item.customerId)
           : null;
-        const orders = item.customerId
-          ? await ctx.db
-              .query("orders")
-              .withIndex("by_customer", (q) =>
-                q.eq("customerId", item.customerId!),
-              )
-              .collect()
-          : [];
+        const orders = (
+          await Promise.all(
+            (item.candidateOrderIds ?? (item.orderId ? [item.orderId] : [])).map(
+              (orderId) => ctx.db.get(orderId),
+            ),
+          )
+        ).filter((order) => order !== null);
+        const agentRuns = await ctx.db
+          .query("agentRuns")
+          .withIndex("by_case", (q) => q.eq("caseId", item._id))
+          .collect();
+        const latestAgentRun = agentRuns.sort(
+          (left, right) => right.startedAt - left.startedAt,
+        )[0];
         const approvals = await ctx.db
           .query("approvals")
           .withIndex("by_case", (q) => q.eq("caseId", item._id))
@@ -257,7 +262,8 @@ export const listReceivedCases = query({
           (approval) =>
             approval.kind === "customer_email" &&
             typeof approval.payload?.actionKey === "string" &&
-            approval.payload.actionKey.startsWith("identity-request:"),
+            (approval.payload.actionKey.startsWith("identity-request:") ||
+              approval.payload.actionKey.startsWith("order-selection:")),
         );
         const identityPayload = identityApproval?.payload as
           | { to?: unknown; subject?: unknown; text?: unknown }
@@ -286,6 +292,12 @@ export const listReceivedCases = query({
               subject: message.subject,
               text: message.text,
               status: item.status,
+              agentRunStatus: latestAgentRun?.status ?? null,
+              escalationReason: item.escalationReason ?? null,
+              recommendation: item.recommendation ?? null,
+              responseDeadlineAt: item.responseDeadlineAt ?? null,
+              escalatedAt: item.escalatedAt ?? null,
+              guidance: item.guidance ?? null,
               customer: customer
                 ? {
                     name: customer.name ?? customer.email,
@@ -332,6 +344,7 @@ export const listReceivedCases = query({
                 contactName: courierContact?.name ?? "Courier",
                 waiting: !courierReply,
                 replyText: courierReply?.text ?? null,
+                attemptCount: contactAttempt.attemptNumber,
               } : null,
               shopifyUpdate:
                 shopifyApproval && typeof shopifyPayload?.note === "string"

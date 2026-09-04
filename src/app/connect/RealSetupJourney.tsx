@@ -424,19 +424,19 @@ function SourcesStage({
   shopifyIntegration?: Integration;
   onContinue: () => void;
 }) {
-  const ready = Boolean(gmailIntegration && shopifyIntegration);
+  const ready = Boolean(gmailIntegration);
 
   return (
     <StageFrame
       number="02"
       eyebrow="Sources"
       title="Connect the evidence WISMO needs."
-      text="Gmail provides the customer question. Shopify provides order facts. Both connections below are live."
+      text="Gmail is required for this build. Shopify can be added now or later if you want store facts in the same workspace."
     >
       <AgentNote
         label="Next action"
-        title="Connect the two sources of truth"
-        text="WISMO only needs the inbox and the store to start reading cases. Everything else can stay compact."
+        title="Connect the inbox first"
+        text="WISMO needs Gmail to start reading cases. Shopify is optional in this build, so it should not block setup."
       />
 
       <div className={styles.summaryGrid}>
@@ -447,8 +447,8 @@ function SourcesStage({
         />
         <SummaryCard
           label="Shopify"
-          value={shopifyIntegration ? "Connected" : "Required"}
-          detail={shopifyIntegration?.accountLabel ?? "Use the store's real .myshopify.com domain and admin token."}
+          value={shopifyIntegration ? "Connected" : "Optional"}
+          detail={shopifyIntegration?.accountLabel ?? "Optional for now. Add the store's real .myshopify.com domain and admin token when you want order facts here too."}
         />
       </div>
 
@@ -821,8 +821,8 @@ function ShopifyCard({ integration }: { integration?: Integration }) {
 
   return (
     <article className={styles.connection}>
-      <Service icon="S" kind="shopify" label="Order source" name="Shopify" connected={Boolean(integration)} />
-      <p>{integration?.accountLabel ?? "Use a founder-created Shopify custom-app token."}</p>
+      <Service icon="S" kind="shopify" label="Order source" name="Shopify" connected={Boolean(integration)} disconnectedLabel="Optional" />
+      <p>{integration?.accountLabel ?? "Optional for this build. Use a founder-created Shopify custom-app token when you want order facts in the workspace."}</p>
       <form onSubmit={submit}>
         <Field label=".myshopify.com domain">
           <input required value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="northstar-goods.myshopify.com" />
@@ -985,12 +985,14 @@ function Service({
   label,
   name,
   connected,
+  disconnectedLabel = "Required",
 }: {
   icon: string;
   kind: string;
   label: string;
   name: string;
   connected: boolean;
+  disconnectedLabel?: string;
 }) {
   return (
     <div className={styles.service}>
@@ -999,7 +1001,7 @@ function Service({
         <small>{label}</small>
         <strong>{name}</strong>
       </div>
-      <span data-connected={connected}>{connected ? "Connected" : "Required"}</span>
+      <span data-connected={connected}>{connected ? "Connected" : disconnectedLabel}</span>
     </div>
   );
 }

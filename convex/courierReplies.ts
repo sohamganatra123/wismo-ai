@@ -4,6 +4,8 @@ import { mutation } from "./_generated/server";
 import { matchCourierReply } from "./domain/courierReply";
 import { customerUpdateDraft } from "./domain/customerUpdate";
 import { shopifyNotePayload } from "./domain/shopifyNote";
+import { recordCaseEvent } from "./lib/caseEvents";
+import { escalateCase } from "./lib/escalations";
 
 function senderEmail(from: string) {
   return from.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase();
@@ -43,8 +45,50 @@ export const prepareWaitingCase = mutation({
     });
     await ctx.db.insert("contactAttempts", { caseId: args.caseId, contactId: contact._id, attemptNumber: 1, messageId, scheduledAt: now, sentAt: now });
     await ctx.db.patch(args.caseId, { status: "awaiting_courier", updatedAt: now });
-    await ctx.db.insert("events", { caseId: args.caseId, type: "courier_contacted", summary: `Opened a controlled courier conversation with ${contact.name}.`, contextSource: "gmail", toolResult: { threadId, simulated: true }, createdAt: now });
+    await recordCaseEvent(ctx, { caseId: args.caseId, type: "courier_contacted", summary: `Opened a controlled courier conversation with ${contact.name}.`, contextSource: "gmail", toolResult: { threadId, simulated: true } });
     return { status: "waiting" as const, threadId, contactName: contact.name };
+  },
+});
+
+export const scheduleRetry = mutation({
+  args: { caseId: v.id("cases") },
+  handler: async (ctx, args) => {
+    await requireManager(ctx);
+    const attempts = await ctx.db
+      .query("contactAttempts")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    if (attempts.length === 0) throw new Error("Contact the courier before scheduling a retry");
+    const lastAttempt = attempts.sort((left, right) => left.attemptNumber - right.attemptNumber).at(-1);
+    if (!lastAttempt) throw new Error("Missing courier attempt");
+    if (lastAttempt.replyMessageId) {
+      return { status: "answered" as const };
+    }
+    if (lastAttempt.attemptNumber >= 3) {
+      await escalateCase(ctx, {
+        caseId: args.caseId,
+        escalationReason: "Courier did not reply after three attempts",
+        recommendation: "Assign a support agent and contact the courier manually.",
+        contextSource: "gmail",
+        toolResult: { attemptCount: attempts.length },
+      });
+      return { status: "escalated" as const };
+    }
+    const scheduledAt = Date.now() + 3 * 60 * 60 * 1000;
+    await ctx.db.insert("contactAttempts", {
+      caseId: args.caseId,
+      contactId: lastAttempt.contactId,
+      attemptNumber: lastAttempt.attemptNumber + 1,
+      scheduledAt,
+    });
+    await recordCaseEvent(ctx, {
+      caseId: args.caseId,
+      type: "courier_retry_scheduled",
+      summary: `Scheduled courier follow-up attempt ${lastAttempt.attemptNumber + 1}.`,
+      contextSource: "gmail",
+      toolResult: { scheduledAt },
+    });
+    return { status: "scheduled" as const, attemptNumber: lastAttempt.attemptNumber + 1, scheduledAt };
   },
 });
 
@@ -109,7 +153,7 @@ export const receiveSimulated = mutation({
       if (!existing) await ctx.db.insert("approvals", { caseId: args.caseId, ...proposal, revision: 1, status: "pending", proposedAt: now });
     }
     await ctx.db.patch(args.caseId, { status: "awaiting_approval", updatedAt: now });
-    await ctx.db.insert("events", { caseId: args.caseId, type: "courier_reply_matched", summary: `Matched ${contact.name}'s reply and proposed Shopify and customer updates.`, contextSource: "gmail,tracking", toolResult: { trackingNumber: matched.scan.trackingNumber, status: matched.scan.status, eventTime: matched.scan.eventTime }, createdAt: now });
+    await recordCaseEvent(ctx, { caseId: args.caseId, type: "courier_reply_matched", summary: `Matched ${contact.name}'s reply and proposed Shopify and customer updates.`, contextSource: "gmail,tracking", toolResult: { trackingNumber: matched.scan.trackingNumber, status: matched.scan.status, eventTime: matched.scan.eventTime } });
     return { status: "proposed" as const, scan: matched.scan };
   },
 });

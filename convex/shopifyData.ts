@@ -1,10 +1,9 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery } from "./_generated/server";
-import { identityRequestDraft } from "./domain/identityRequest";
-
-function senderEmail(from: string) {
-  return from.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase();
-}
+import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { scheduleCaseAgentRun } from "./lib/agentScheduling";
+import { recordCaseEvent } from "./lib/caseEvents";
+import { matchedShopifyTransition } from "./domain/agentJourney";
 
 export const getMatchInput = internalQuery({
   args: { caseId: v.id("cases") },
@@ -30,15 +29,23 @@ const orderSnapshot = v.object({
   trackingUrl: v.optional(v.string()),
 });
 
-export const saveMatch = internalMutation({
-  args: {
-    caseId: v.id("cases"),
-    shopifyCustomerId: v.string(),
-    name: v.string(),
-    email: v.string(),
-    orders: v.array(orderSnapshot),
-  },
-  handler: async (ctx, args) => {
+type SaveMatchArgs = {
+  caseId: Id<"cases">;
+  shopifyCustomerId: string;
+  name: string;
+  email: string;
+  orders: Array<{
+    shopifyOrderId: string;
+    name: string;
+    createdAt: string;
+    lineItems: string[];
+    fulfillmentStatus: string;
+    trackingNumber?: string;
+    trackingUrl?: string;
+  }>;
+};
+
+export async function saveMatchInMutation(ctx: MutationCtx, args: SaveMatchArgs) {
     const now = Date.now();
     const existingCustomer = await ctx.db
       .query("customers")
@@ -88,13 +95,15 @@ export const saveMatch = internalMutation({
       }
     }
 
+    const transition = matchedShopifyTransition(orderIds);
     await ctx.db.patch(args.caseId, {
       customerId,
-      ...(orderIds.length === 1 ? { orderId: orderIds[0] } : {}),
-      status: orderIds.length === 1 ? "investigating" : "order_needed",
+      orderId: transition.orderId,
+      candidateOrderIds: transition.candidateOrderIds,
+      status: transition.status,
       updatedAt: now,
     });
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId: args.caseId,
       type: "shopify_customer_matched",
       summary: `Matched ${args.email} to ${args.name} with ${orderIds.length} active order${orderIds.length === 1 ? "" : "s"}.`,
@@ -102,9 +111,19 @@ export const saveMatch = internalMutation({
       toolName: "customerByIdentifier",
       toolInput: { email: args.email },
       toolResult: { activeOrderCount: orderIds.length },
-      createdAt: now,
     });
+    await scheduleCaseAgentRun(ctx, { caseId: args.caseId, trigger: "inbound" });
+}
+
+export const saveMatch = internalMutation({
+  args: {
+    caseId: v.id("cases"),
+    shopifyCustomerId: v.string(),
+    name: v.string(),
+    email: v.string(),
+    orders: v.array(orderSnapshot),
   },
+  handler: saveMatchInMutation,
 });
 
 export const recordOutcome = internalMutation({
@@ -117,15 +136,14 @@ export const recordOutcome = internalMutation({
     detail: v.string(),
   },
   handler: async (ctx, args) => {
-    const now = Date.now();
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId: args.caseId,
       type: `shopify_match_${args.outcome}`,
       summary: args.detail,
       contextSource: "shopify",
       ...(args.outcome === "shopify_error" ? { error: args.detail } : {}),
-      createdAt: now,
     });
+    await scheduleCaseAgentRun(ctx, { caseId: args.caseId, trigger: "inbound" });
   },
 });
 
@@ -134,54 +152,21 @@ export const recordNoMatchAndPrepareIdentityRequest = internalMutation({
   handler: async (ctx, args) => {
     const item = await ctx.db.get(args.caseId);
     if (!item) return;
-    const message = await ctx.db.get(item.sourceMessageId);
-    if (!message) return;
-    const recipient = senderEmail(message.from);
     const now = Date.now();
     await ctx.db.patch(args.caseId, {
+      customerId: undefined,
+      orderId: undefined,
+      candidateOrderIds: [],
       status: "identity_needed",
       escalationReason: "Sender did not match a Shopify customer",
       updatedAt: now,
     });
-    if (!recipient) {
-      await ctx.db.insert("events", {
-        caseId: args.caseId,
-        type: "identity_request_unavailable",
-        summary: "The unknown sender has no safe reply address.",
-        contextSource: "gmail",
-        createdAt: now,
-      });
-      return;
-    }
-    const draft = identityRequestDraft({
+    await recordCaseEvent(ctx, {
       caseId: args.caseId,
-      threadId: message.threadId,
-      messageIdHeader: message.messageIdHeader,
-      recipient,
-      subject: message.subject,
-    });
-    const existing = await ctx.db
-      .query("approvals")
-      .withIndex("by_action_key", (q) => q.eq("actionKey", draft.actionKey))
-      .unique();
-    if (!existing) {
-      await ctx.db.insert("approvals", {
-        caseId: args.caseId,
-        actionKey: draft.actionKey,
-        kind: "customer_email",
-        revision: 1,
-        payload: draft,
-        status: "pending",
-        proposedAt: now,
-      });
-    }
-    await ctx.db.insert("events", {
-      caseId: args.caseId,
-      type: "identity_request_prepared",
+      type: "shopify_customer_not_matched",
       summary: args.detail,
       contextSource: "shopify",
-      toolResult: { requestedFields: ["checkout email", "order number"] },
-      createdAt: now,
     });
+    await scheduleCaseAgentRun(ctx, { caseId: args.caseId, trigger: "inbound" });
   },
 });

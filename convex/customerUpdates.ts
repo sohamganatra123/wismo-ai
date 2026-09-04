@@ -1,12 +1,14 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, internalQuery } from "./_generated/server";
+import { action, internalAction, internalMutation, internalQuery } from "./_generated/server";
 import {
   claimableCustomerUpdate,
   customerUpdateHeaders,
   type CustomerUpdatePayload,
 } from "./domain/customerUpdate";
+import { recordCaseEvent } from "./lib/caseEvents";
+import { escalateCase } from "./lib/escalations";
 import { decryptCredentials } from "./security/credentials";
 
 type Tokens = { refresh_token?: string };
@@ -30,19 +32,34 @@ export const getExecutionInput = internalQuery({
 });
 
 export const claim = internalMutation({
-  args: { approvalId: v.id("approvals"), userId: v.id("users") },
+  args: {
+    approvalId: v.id("approvals"),
+    source: v.union(v.literal("manager"), v.literal("agent_policy")),
+    userId: v.optional(v.id("users")),
+  },
   handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .unique();
-    if (!profile) throw new Error("Manager access required");
     const approval = await ctx.db.get(args.approvalId);
-    const payload = claimableCustomerUpdate(approval);
+    if (args.source === "manager") {
+      if (!args.userId) throw new Error("Manager access required");
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId!))
+        .unique();
+      if (!profile) throw new Error("Manager access required");
+    } else if (approval?.status !== "approved" || approval.decisionSource !== "agent_policy") {
+      throw new Error("Agent policy did not approve this update");
+    }
+    const payload = args.source === "manager"
+      ? claimableCustomerUpdate(approval)
+      : (() => {
+          if (!approval || approval.kind !== "customer_email") throw new Error("Customer update not found");
+          return approval.payload as CustomerUpdatePayload;
+        })();
     await ctx.db.patch(args.approvalId, {
       status: "executing",
-      decidedAt: Date.now(),
-      decidedBy: args.userId,
+      decisionSource: args.source,
+      decidedAt: approval?.decidedAt ?? Date.now(),
+      ...(args.userId ? { decidedBy: args.userId } : {}),
     });
     return payload;
   },
@@ -85,7 +102,7 @@ export const finish = internalMutation({
     });
     await ctx.db.patch(args.approvalId, { status: "completed", executedAt: now });
     await ctx.db.patch(approval.caseId, { status: "investigating", updatedAt: now });
-    await ctx.db.insert("events", {
+    await recordCaseEvent(ctx, {
       caseId: approval.caseId,
       type: "customer_tracking_update_sent",
       summary: `Sent the approved tracking update for ${args.payload.orderName}.`,
@@ -97,7 +114,6 @@ export const finish = internalMutation({
         trackingEventTime: args.payload.trackingEventTime,
       },
       actorUserId: approval.decidedBy,
-      createdAt: now,
     });
   },
 });
@@ -107,16 +123,14 @@ export const fail = internalMutation({
   handler: async (ctx, args) => {
     const approval = await ctx.db.get(args.approvalId);
     if (!approval || approval.status !== "executing") return;
-    const now = Date.now();
     await ctx.db.patch(args.approvalId, { status: "failed", error: args.error });
-    await ctx.db.patch(approval.caseId, { status: "human_attention", escalationReason: "Approved customer update failed to send", updatedAt: now });
-    await ctx.db.insert("events", {
+    await escalateCase(ctx, {
       caseId: approval.caseId,
-      type: "customer_tracking_update_failed",
-      summary: "The approved customer tracking update could not be sent.",
+      escalationReason: "Approved customer update failed to send",
+      recommendation: "Review the Gmail connection, confirm the message text, and resend the approved update.",
       contextSource: "gmail",
       error: args.error,
-      createdAt: now,
+      actorUserId: approval.decidedBy,
     });
   },
 });
@@ -151,7 +165,7 @@ export const approveAndSend = action({
     if (!userId) throw new Error("Sign in to approve this update");
     const input = await ctx.runQuery(internal.customerUpdates.getExecutionInput, args);
     if (!input.connection) throw new Error("Gmail is not connected");
-    const payload = await ctx.runMutation(internal.customerUpdates.claim, { ...args, userId });
+    const payload = await ctx.runMutation(internal.customerUpdates.claim, { ...args, userId, source: "manager" });
     try {
       const credentials = await decryptCredentials<Tokens>(
         input.connection.encryptedCredentials,
@@ -176,6 +190,46 @@ export const approveAndSend = action({
         payload,
       });
       return { status: "sent" as const };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gmail customer update failed";
+      await ctx.runMutation(internal.customerUpdates.fail, { ...args, error: message });
+      throw error;
+    }
+  },
+});
+
+export const sendApproved = internalAction({
+  args: { approvalId: v.id("approvals") },
+  handler: async (ctx, args) => {
+    const input = await ctx.runQuery(internal.customerUpdates.getExecutionInput, args);
+    if (!input.connection) throw new Error("Gmail is not connected");
+    const payload = await ctx.runMutation(internal.customerUpdates.claim, {
+      ...args,
+      source: "agent_policy",
+    });
+    try {
+      const credentials = await decryptCredentials<Tokens>(
+        input.connection.encryptedCredentials,
+        required("INTEGRATION_ENCRYPTION_KEY"),
+      );
+      if (!credentials.refresh_token) throw new Error("Reconnect Gmail");
+      const token = await refreshAccessToken(credentials.refresh_token);
+      const raw = base64Url(
+        `${customerUpdateHeaders(payload as CustomerUpdatePayload).join("\r\n")}\r\n\r\n${payload.text}`,
+      );
+      const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: payload.threadId, raw }),
+      });
+      const result = (await response.json()) as { id?: string };
+      if (!response.ok || !result.id) throw new Error("Gmail customer update failed");
+      await ctx.runMutation(internal.customerUpdates.finish, {
+        ...args,
+        providerId: result.id,
+        from: input.connection.accountLabel,
+        payload,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Gmail customer update failed";
       await ctx.runMutation(internal.customerUpdates.fail, { ...args, error: message });

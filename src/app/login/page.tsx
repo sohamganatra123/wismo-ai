@@ -12,8 +12,8 @@ export default function LoginPage() {
           <Link className={styles.brand} href="/">WISMO.ai</Link>
           <p className={styles.eyebrow}>LOCAL ENVIRONMENT</p>
           <h1>Login needs a configured Convex environment.</h1>
-          <p>The local simulation is still available through the connect flow.</p>
-          <Link className={styles.primary} href="/connect">Open connect flow <span>↗</span></Link>
+          <p>The public early-access form is still available through the connect page.</p>
+          <Link className={styles.primary} href="/connect">Open early-access form <span>↗</span></Link>
         </section>
       </main>
     );
