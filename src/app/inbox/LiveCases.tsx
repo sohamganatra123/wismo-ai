@@ -65,6 +65,20 @@ function formatInboxTime(value: number) {
   }).format(value);
 }
 
+function formatThreadTime(value: number) {
+  const date = new Date(value);
+  const now = new Date();
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  return new Intl.DateTimeFormat(
+    "en",
+    isToday ? { hour: "numeric", minute: "2-digit" } : { month: "short", day: "numeric" },
+  ).format(date);
+}
+
 function senderLabel(value: string) {
   const match = value.match(/^(.*?)\s*<.+>$/);
   return match?.[1]?.trim() || value;
@@ -391,13 +405,10 @@ export default function LiveCases() {
     <section className={styles.liveCases} aria-labelledby="live-cases-title">
       <header>
         <div>
-          <p className={styles.eyebrow}>Live inbox · Gmail · every minute</p>
-          <h2 id="live-cases-title">Recent delivery cases</h2>
-          <p className={styles.liveDescription}>
-            Automatic replies, clarifications, and the conversations that still need review.
-          </p>
+          <p className={styles.eyebrow}>Gmail · checks every minute</p>
+          <h2 id="live-cases-title">Delivery conversations</h2>
         </div>
-        <button onClick={pollNow} disabled={working}>
+        <button className={styles.pollButton} onClick={pollNow} disabled={working}>
           {working ? "Polling Gmail…" : "Poll now"}
         </button>
       </header>
@@ -419,7 +430,7 @@ export default function LiveCases() {
             const selected = rows.find((item) => item.id === selectedCaseId) ?? rows[0];
             return (
               <div className={styles.threadShell}>
-                <div className={styles.threadList} role="list" aria-label="Email threads">
+                <nav className={styles.threadList} aria-label="Email threads">
                   {rows.map((item) => {
                     const active = item.id === selected.id;
                     return (
@@ -428,6 +439,7 @@ export default function LiveCases() {
                         type="button"
                         className={styles.threadRow}
                         data-active={active}
+                        aria-current={active ? "true" : undefined}
                         onClick={() => setSelectedCaseId(item.id)}
                       >
                         <span className={styles.threadAvatar} aria-hidden="true">
@@ -436,19 +448,21 @@ export default function LiveCases() {
                         <div className={styles.threadPreview}>
                           <header>
                             <strong>{senderLabel(item.from)}</strong>
-                            <time>{formatInboxTime(item.createdAt)}</time>
+                            <time dateTime={new Date(item.createdAt).toISOString()}>
+                              {formatThreadTime(item.createdAt)}
+                            </time>
                           </header>
                           <h3>{item.subject}</h3>
                           <p>{messageSnippet(item.text)}</p>
-                        </div>
-                        <div className={styles.threadMeta}>
-                          <small>{statusLabel(item.status)}</small>
-                          <span>{item.customer ? item.customer.name : "No match yet"}</span>
+                          <div className={styles.threadMeta}>
+                            <small>{statusLabel(item.status)}</small>
+                            {item.customer ? <span>Matched to {item.customer.name}</span> : null}
+                          </div>
                         </div>
                       </button>
                     );
                   })}
-                </div>
+                </nav>
 
                 <article className={styles.threadDetail}>
                   <header className={styles.threadDetailHeader}>
@@ -478,7 +492,7 @@ export default function LiveCases() {
 
                     {selected.agentRunStatus === "failed" ? (
                       <button
-                        className={styles.investigateButton}
+                        className={`${styles.actionButton} ${styles.investigateButton}`}
                         onClick={() => runInvestigation(selected.id)}
                         disabled={investigatingCase === selected.id}
                       >
@@ -491,7 +505,7 @@ export default function LiveCases() {
                         <>
                           <header>
                             <div>
-                              <small>Exact Shopify match</small>
+                              <small>Exact order match</small>
                               <strong>{selected.customer.name}</strong>
                               <span>{selected.customer.email}</span>
                             </div>
@@ -566,6 +580,7 @@ export default function LiveCases() {
                                   </header>
                                   <p>{selected.customerUpdate.text}</p>
                                   <button
+                                    className={styles.actionButton}
                                     onClick={() => sendCustomerUpdate(selected.customerUpdate!.approvalId)}
                                     disabled={
                                       sendingUpdate === selected.customerUpdate.approvalId ||
@@ -583,7 +598,7 @@ export default function LiveCases() {
                                 </section>
                               ) : null}
                               {!selected.customerUpdate && !selected.courierState ? (
-                                <button className={styles.investigateButton} onClick={() => waitForCourier(selected.id)} disabled={courierWork === selected.id}>
+                                <button className={`${styles.actionButton} ${styles.investigateButton}`} onClick={() => waitForCourier(selected.id)} disabled={courierWork === selected.id}>
                                   {courierWork === selected.id ? "Opening courier case…" : "Withhold answer and contact courier"}
                                 </button>
                               ) : null}
@@ -593,7 +608,7 @@ export default function LiveCases() {
                                   <strong>{selected.courierState.waiting ? "Waiting for reply" : "Reply matched to this case"}</strong>
                                   {selected.courierState.replyText ? <p>{selected.courierState.replyText}</p> : null}
                                   {selected.courierState.waiting ? (
-                                    <button onClick={() => simulateCourierReply(selected.id)} disabled={courierWork === selected.id}>
+                                    <button className={styles.actionButton} onClick={() => simulateCourierReply(selected.id)} disabled={courierWork === selected.id}>
                                       {courierWork === selected.id ? "Receiving…" : "Simulate confirmed courier reply"}
                                     </button>
                                   ) : null}
@@ -603,19 +618,19 @@ export default function LiveCases() {
                                 <section className={styles.shopifyUpdate}>
                                   <small>Approval required · Shopify order note</small>
                                   <strong>{selected.shopifyUpdate.note}</strong>
-                                  <button onClick={() => applyShopifyNote(selected.shopifyUpdate!.approvalId)} disabled={shopifyWork === selected.shopifyUpdate.approvalId || selected.shopifyUpdate.status !== "pending"}>
+                                  <button className={styles.actionButton} onClick={() => applyShopifyNote(selected.shopifyUpdate!.approvalId)} disabled={shopifyWork === selected.shopifyUpdate.approvalId || selected.shopifyUpdate.status !== "pending"}>
                                     {shopifyWork === selected.shopifyUpdate.approvalId ? "Applying…" : selected.shopifyUpdate.status === "completed" ? "Applied" : selected.shopifyUpdate.status === "failed" ? "Apply failed" : "Approve Shopify update"}
                                   </button>
                                 </section>
                               ) : null}
                             </>
                           ) : (
-                            <p>No active Shopify orders found for this customer.</p>
+                            <p>No active orders found for this customer.</p>
                           )}
                         </>
                       ) : selected.status === "identity_needed" ? (
                         <div className={styles.identityRequest}>
-                          <strong>No exact Shopify customer match</strong>
+                          <strong>No exact customer match</strong>
                           <p>No customer or order data was shown.</p>
                           {selected.identityRequest ? (
                             <section>
@@ -623,6 +638,7 @@ export default function LiveCases() {
                               <strong>{selected.identityRequest.subject}</strong>
                               <p>{selected.identityRequest.text}</p>
                               <button
+                                className={styles.actionButton}
                                 onClick={() => sendIdentityRequest(selected.identityRequest!.approvalId)}
                                 disabled={
                                   sendingApproval === selected.identityRequest.approvalId ||

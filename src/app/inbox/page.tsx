@@ -33,10 +33,10 @@ export default function HumanAttentionInbox() {
         <header className={styles.header}>
           <div>
             <p className={styles.eyebrow}>Operations inbox</p>
-            <h1>Delivery conversations, sorted.</h1>
+            <h1>Inbox</h1>
           </div>
           <p>
-            Automatic replies stay quiet. Unclear or risky cases surface here with the next safe action.
+            Review unclear or risky delivery conversations. Routine replies stay automatic.
           </p>
         </header>
 

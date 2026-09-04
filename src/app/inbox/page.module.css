@@ -2,7 +2,7 @@
   --ink-soft: var(--text-tertiary);
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   color: #171714;
   background-color: #f7f4ea;
   background-image:
@@ -108,16 +108,16 @@
 }
 .workspace {
   min-width: 0;
-  padding: 56px clamp(28px, 5vw, 88px) 96px;
+  padding: 36px clamp(28px, 4vw, 64px) 80px;
   font-family: var(--font-body);
 }
 .header {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 56px;
-  max-width: 1120px;
-  padding-bottom: 34px;
+  gap: 40px;
+  max-width: 1200px;
+  padding-bottom: 24px;
   border-bottom: 2px solid #171714;
 }
 .eyebrow {
@@ -127,24 +127,20 @@
   text-transform: uppercase;
 }
 .header h1 {
-  margin-top: 14px;
-  font: 820 clamp(38px, 4.8vw, 68px)/0.94 var(--font-display);
-  letter-spacing: -0.06em;
+  margin-top: 8px;
+  font: 800 clamp(34px, 3vw, 44px)/1 var(--font-display);
+  letter-spacing: -0.045em;
 }
 .header > p {
-  max-width: 360px;
-  padding-bottom: 4px;
+  max-width: 440px;
   color: #4f4b42;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.6;
 }
 .liveCases {
-  max-width: 1120px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: 34px;
+  max-width: 1200px;
+  display: block;
+  margin-top: 26px;
   padding: 0;
   background: transparent;
   box-shadow: none;
@@ -155,13 +151,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 0 0 18px;
+  padding: 0 0 16px;
   border-bottom: 1px solid #d1c8b6;
 }
 .liveCases h2 {
-  margin-top: 10px;
-  font: 760 28px/1 var(--font-display);
-  letter-spacing: -0.04em;
+  margin-top: 7px;
+  font: 750 22px/1.1 var(--font-display);
+  letter-spacing: -0.025em;
 }
 .liveDescription {
   max-width: 620px;
@@ -170,13 +166,14 @@
   font-size: 14px;
   line-height: 1.6;
 }
-.liveCases button,
+.pollButton,
+.actionButton,
 .liveAction {
-  min-height: 48px;
-  display: flex;
+  min-height: 44px;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   padding: 0 16px;
   border: 1px solid #2457ff;
   border-radius: 0;
@@ -186,19 +183,23 @@
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 4px 4px 0 rgba(23, 23, 20, 0.18);
+  box-shadow: 2px 2px 0 rgba(23, 23, 20, 0.18);
 }
-.liveCases button:hover,
+.pollButton:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
 .liveAction:hover {
   background: #1747de;
-  box-shadow: 6px 6px 0 rgba(23, 23, 20, 0.2);
-  transform: translateY(-2px) rotate(-0.2deg);
+  box-shadow: 3px 3px 0 rgba(23, 23, 20, 0.2);
 }
 .liveAction span {
   color: #dce5ff;
   font-size: 17px;
 }
-.liveCases button:disabled {
+.liveAction {
+  margin-top: 24px;
+}
+.pollButton:disabled,
+.actionButton:disabled {
   opacity: 0.5;
 }
 .pollFeedback {
@@ -213,7 +214,7 @@
 .receivedList {
   width: 100%;
   display: block;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 .receivedList > p {
   padding: 16px;
@@ -224,22 +225,24 @@
 }
 .threadShell {
   display: grid;
-  grid-template-columns: minmax(320px, 0.44fr) minmax(0, 0.56fr);
-  gap: 28px;
+  grid-template-columns: minmax(340px, 380px) minmax(0, 1fr);
+  gap: 32px;
   align-items: start;
 }
 .threadList {
   border-top: 1px solid #171714;
-  background: rgba(255, 255, 255, 0.34);
+  border-bottom: 1px solid #d1c8b6;
+  background: rgba(255, 255, 255, 0.26);
 }
 .threadRow {
   appearance: none;
   width: 100%;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 14px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 13px;
   align-items: start;
-  padding: 18px 0;
+  min-height: 44px;
+  padding: 16px 14px 16px 18px;
   border: 0;
   border-bottom: 1px solid #d1c8b6;
   color: inherit;
@@ -247,14 +250,28 @@
   font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
+  white-space: normal;
+  box-shadow: none;
+}
+.threadRow:hover:not([data-active="true"]) {
+  background: rgba(255, 255, 255, 0.52);
+}
+.threadRow:active {
+  transform: none;
+}
+.threadRow:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #171714;
+  outline-offset: -2px;
 }
 .threadRow[data-active="true"] {
-  background: rgba(36, 87, 255, 0.035);
+  background: rgba(36, 87, 255, 0.075);
   box-shadow: inset 4px 0 0 #2457ff;
 }
 .threadAvatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   color: #171714;
@@ -275,46 +292,54 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 700 16px/1.2 var(--font-display);
+  font: 700 14px/1.25 var(--font-display);
 }
 .threadPreview header time {
   flex: 0 0 auto;
 }
 .threadPreview h3 {
   max-width: none;
-  margin-top: 10px;
+  margin-top: 7px;
   color: #171714;
-  font: 700 18px/1.18 var(--font-display);
-  letter-spacing: -0.04em;
+  font: 700 15px/1.3 var(--font-display);
+  letter-spacing: -0.02em;
 }
 .threadPreview p {
-  margin-top: 8px;
+  display: -webkit-box;
+  margin-top: 5px;
+  overflow: hidden;
   color: #4f4b42;
-  font: 500 14px/1.55 var(--font-body);
+  font: 450 13px/1.45 var(--font-body);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .threadMeta {
-  display: grid;
-  justify-items: end;
-  gap: 8px;
-  padding-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 11px;
 }
-.threadMeta small {
-  padding: 6px 8px;
+.receivedList .threadMeta small {
+  padding: 5px 7px;
   color: #2457ff;
   background: rgba(36, 87, 255, 0.1);
-  font: 700 10px var(--font-data);
+  font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
 .threadMeta span {
   max-width: 150px;
-  color: #7a7568;
+  overflow: hidden;
+  color: #5b594f;
   font: 500 12px/1.35 var(--font-body);
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .threadDetail {
   border-top: 1px solid #171714;
   padding-top: 18px;
-  background: rgba(255, 255, 255, 0.28);
+  background: transparent;
 }
 .threadDetailHeader {
   display: flex;
@@ -331,10 +356,10 @@
   text-transform: uppercase;
 }
 .threadDetailHeader h3 {
-  max-width: 16ch;
+  max-width: 24ch;
   margin-top: 10px;
-  font: 760 clamp(28px, 3vw, 40px)/0.98 var(--font-display);
-  letter-spacing: -0.05em;
+  font: 750 clamp(25px, 2.4vw, 32px)/1.05 var(--font-display);
+  letter-spacing: -0.035em;
 }
 .threadDetailMeta {
   display: grid;
@@ -346,7 +371,7 @@
   font: 700 16px/1.2 var(--font-display);
 }
 .threadDetailMeta span {
-  color: #7a7568;
+  color: #5b594f;
   font: 700 11px var(--font-data);
 }
 .messageStack {
@@ -385,12 +410,6 @@
   color: #5b594f;
   font: 700 12px var(--font-data);
   font-variant-numeric: tabular-nums;
-}
-.receivedList h3 {
-  max-width: 16ch;
-  margin-top: 14px;
-  font: 760 clamp(24px, 2.5vw, 34px)/0.98 var(--font-display);
-  letter-spacing: -0.05em;
 }
 .receivedList article > p {
   margin-top: 10px;
@@ -521,7 +540,7 @@
 }
 .investigateButton {
   width: max-content;
-  min-height: 40px !important;
+  min-height: 44px;
 }
 .investigationResult {
   display: grid;
@@ -627,9 +646,6 @@
   font: 600 11px var(--font-data);
   color: #5b594f;
 }
-.liveCases {
-  flex-wrap: wrap;
-}
 @media (max-width: 960px) {
   .shell {
     display: block;
@@ -655,7 +671,7 @@
     display: none;
   }
   .workspace {
-    padding: 48px 20px 72px;
+    padding: 32px 20px 72px;
   }
   .header {
     display: block;
@@ -674,10 +690,7 @@
   }
   .threadShell {
     grid-template-columns: 1fr;
-    gap: 20px;
-  }
-.threadMeta {
-    justify-items: start;
+    gap: 28px;
   }
   .threadDetailHeader {
     display: grid;
@@ -697,27 +710,19 @@
     font-size: 12px;
   }
   .header h1 {
-    font-size: 38px;
+    font-size: 34px;
   }
   .liveCases {
     margin-top: 28px;
   }
   .threadRow {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr);
   }
-  .threadMeta {
-    grid-column: 2;
-    justify-items: start;
-  }
-  .threadDetailHeader h3,
-  .threadPreview h3,
-  .receivedList h3 {
+  .threadDetailHeader h3 {
     max-width: none;
-    font-size: 28px;
+    font-size: 24px;
   }
-  .messageBubble p,
-  .liveDescription,
-  .header > p {
-    font-size: 14px;
+  .messageBubble p {
+    font-size: 16px;
   }
 }
