@@ -3,17 +3,20 @@
   display: grid;
   place-items: center;
   padding: 32px;
-  background:
-    radial-gradient(circle at top left, rgba(215, 122, 69, 0.08), transparent 32%),
-    linear-gradient(180deg, #f8f4ea 0%, #f1ebde 100%);
+  color: #171714;
+  background-color: #f7f4ea;
+  background-image:
+    linear-gradient(rgba(247, 244, 234, 0.94), rgba(247, 244, 234, 0.94)),
+    url("/landing/paper-grain.webp");
 }
 
 .card {
   width: min(100%, 560px);
   padding: 40px;
-  background: var(--paper);
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
+  background: #f7f4ea;
+  border: 1px solid #171714;
+  border-radius: 0;
+  box-shadow: 8px 8px 0 rgba(23, 23, 20, 0.14);
 }
 
 .brand {
@@ -24,17 +27,19 @@
   margin-bottom: 40px;
   font: 800 13px var(--font-display);
   letter-spacing: 0.12em;
+  color: inherit;
 }
 
 .brand i {
   width: 18px;
   height: 18px;
-  border: 5px solid var(--amber);
+  border: 5px solid #2457ff;
   border-radius: 50%;
+  box-shadow: inset -3px 0 0 #ffb547;
 }
 
 .eyebrow {
-  color: var(--attention);
+  color: #2457ff;
   font: 700 11px var(--font-data);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -73,14 +78,14 @@
   justify-content: space-between;
   margin-top: 28px;
   padding: 0 18px;
-  border: 0;
-  border-radius: 10px;
+  border: 1px solid #2457ff;
+  border-radius: 0;
   color: white;
-  background: var(--carbon);
+  background: #2457ff;
   font-weight: 750;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 10px 24px rgba(17, 19, 24, 0.14);
+  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.2);
 }
 
 .primary span,
@@ -101,7 +106,9 @@
 .result button:not(:disabled):hover,
 .inlineActions button:hover,
 .textButton:hover {
-  background: #292d35;
+  background: #1747de;
+  transform: translateY(-2px) rotate(-0.2deg);
+  box-shadow: 7px 7px 0 rgba(23, 23, 20, 0.22);
 }
 
 .error {
@@ -120,10 +127,12 @@
 .app {
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 300px 1fr;
-  background:
-    radial-gradient(circle at top left, rgba(215, 122, 69, 0.06), transparent 28%),
-    linear-gradient(180deg, #f8f4ea 0%, #f1ebde 100%);
+  grid-template-columns: 320px 1fr;
+  color: #171714;
+  background-color: #f7f4ea;
+  background-image:
+    linear-gradient(rgba(247, 244, 234, 0.96), rgba(247, 244, 234, 0.96)),
+    url("/landing/paper-grain.webp");
 }
 
 .rail {
@@ -133,10 +142,12 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 28px 24px;
-  border-right: 1px solid rgba(17, 19, 24, 0.08);
-  background: rgba(247, 244, 234, 0.88);
-  backdrop-filter: blur(8px);
+  padding: 28px 26px;
+  color: #f7f4ea;
+  border-right: 1px solid #2f3640;
+  background:
+    linear-gradient(rgba(23, 23, 20, 0.93), rgba(23, 23, 20, 0.95)),
+    url("/landing/paper-grain.webp");
 }
 
 .railIntro {
@@ -149,7 +160,7 @@
 }
 
 .railIntro small {
-  color: var(--slate);
+  color: rgba(247, 244, 234, 0.68);
   font-size: 12px;
 }
 
@@ -169,9 +180,10 @@
   align-items: center;
   gap: 12px;
   padding: 14px 14px 14px 12px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0;
+  color: #f7f4ea;
+  background: rgba(255, 255, 255, 0.03);
   text-align: left;
   cursor: pointer;
 }
@@ -182,8 +194,10 @@
 }
 
 .progressList li button[aria-current="step"] {
-  border-color: rgba(36, 87, 255, 0.28);
-  box-shadow: 0 0 0 3px rgba(36, 87, 255, 0.08);
+  border-color: #2457ff;
+  box-shadow:
+    inset 4px 0 0 #2457ff,
+    0 0 0 1px rgba(36, 87, 255, 0.14);
   transform: translateX(4px);
 }
 
@@ -193,8 +207,8 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--paper);
-  color: var(--carbon);
+  background: #f7f4ea;
+  color: #171714;
   font: 700 11px var(--font-data);
 }
 
@@ -208,20 +222,20 @@
 }
 
 .progressList li button small {
-  color: var(--slate);
+  color: rgba(247, 244, 234, 0.68);
   font-size: 12px;
   line-height: 1.4;
 }
 
 .progressList li button em {
-  color: var(--slate);
+  color: rgba(247, 244, 234, 0.74);
   font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
 
 .progressList li[data-state="done"] button {
-  border-color: rgba(55, 124, 62, 0.18);
-  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .progressList li[data-state="done"] button > span {
@@ -230,24 +244,24 @@
 }
 
 .progressList li[data-state="current"] button {
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .progressList li[data-state="locked"] button {
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .railCard {
   display: grid;
   gap: 6px;
   padding: 16px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .railCard small {
-  color: var(--slate);
+  color: #9baeff;
   font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
@@ -257,7 +271,7 @@
 }
 
 .railCard p {
-  color: var(--slate);
+  color: rgba(247, 244, 234, 0.72);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -266,35 +280,48 @@
   margin-top: auto;
   min-height: 48px;
   padding: 0 12px;
-  border: 1px solid rgba(17, 19, 24, 0.12);
-  border-radius: 10px;
-  color: var(--slate);
-  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0;
+  color: rgba(247, 244, 234, 0.82);
+  background: transparent;
   cursor: pointer;
 }
 
 .signOut:hover {
-  color: var(--carbon);
-  border-color: rgba(17, 19, 24, 0.18);
-  background: rgba(255, 255, 255, 0.86);
+  color: white;
+  border-color: #2457ff;
+  background: rgba(36, 87, 255, 0.08);
 }
 
 .workspace {
   min-width: 0;
-  width: min(100%, 1120px);
-  padding: 64px clamp(24px, 5vw, 88px) 120px;
+  width: min(100%, 1240px);
+  padding: 56px clamp(24px, 5vw, 88px) 120px;
 }
 
 .header {
-  max-width: 760px;
+  position: relative;
+  max-width: 940px;
+  padding: 0 0 38px;
+  border-bottom: 2px solid #171714;
+}
+
+.header::before {
+  content: "WISMO / SETUP";
+  display: block;
+  margin-bottom: 22px;
+  color: #2457ff;
+  font: 600 12px/1.4 var(--font-data);
+  letter-spacing: 0.1em;
 }
 
 .statusBanner {
   margin-top: 28px;
   padding: 16px 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: rgba(247, 244, 234, 0.92);
+  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.1);
 }
 
 .statusBanner[data-tone="success"] {
@@ -320,10 +347,10 @@
 .stage {
   margin-top: 40px;
   padding: clamp(22px, 3vw, 34px);
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow-card);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: rgba(247, 244, 234, 0.9);
+  box-shadow: 8px 8px 0 rgba(23, 23, 20, 0.12);
 }
 
 .stageHeader {
@@ -349,7 +376,7 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: rgba(215, 122, 69, 0.12);
+  background: rgba(36, 87, 255, 0.1);
 }
 
 .stageHeader h2 {
@@ -372,10 +399,10 @@
 .form,
 .list,
 .summaryCard {
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 18px;
-  background: var(--paper);
-  box-shadow: var(--shadow-card);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: #f7f4ea;
+  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.08);
 }
 
 .agentNote {
@@ -383,9 +410,9 @@
   gap: 8px;
   margin-bottom: 20px;
   padding: 18px;
-  border: 1px solid rgba(36, 87, 255, 0.14);
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(36, 87, 255, 0.08), rgba(255, 255, 255, 0.92));
+  border: 1px solid #2457ff;
+  border-radius: 0;
+  background: linear-gradient(135deg, rgba(36, 87, 255, 0.08), rgba(247, 244, 234, 0.96));
 }
 
 .agentNote small {
@@ -454,16 +481,18 @@
   gap: 10px;
   min-height: 180px;
   padding: 18px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 18px;
-  background: rgba(247, 244, 234, 0.72);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: rgba(236, 229, 213, 0.7);
   cursor: pointer;
 }
 
 .modeCard[data-selected="true"] {
-  border-color: rgba(36, 87, 255, 0.28);
-  box-shadow: 0 0 0 3px rgba(36, 87, 255, 0.08);
-  background: rgba(255, 255, 255, 0.94);
+  border-color: #2457ff;
+  box-shadow:
+    inset 4px 0 0 #2457ff,
+    5px 5px 0 rgba(23, 23, 20, 0.1);
+  background: rgba(247, 244, 234, 0.95);
 }
 
 .modeCard input {
@@ -528,10 +557,10 @@
 }
 
 .foldout {
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 18px;
-  background: var(--paper);
-  box-shadow: var(--shadow-card);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: #f7f4ea;
+  box-shadow: 5px 5px 0 rgba(23, 23, 20, 0.08);
 }
 
 .foldoutSummary {
@@ -565,7 +594,7 @@
   flex: none;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(17, 19, 24, 0.06);
+  background: rgba(23, 23, 20, 0.08);
   color: var(--slate);
   font: 700 10px var(--font-data);
   text-transform: uppercase;
@@ -573,7 +602,7 @@
 
 .foldout[open] .foldoutSummary span {
   color: #2457ff;
-  background: rgba(36, 87, 255, 0.08);
+  background: rgba(36, 87, 255, 0.12);
 }
 
 .foldoutBody {
@@ -641,9 +670,9 @@
   gap: 14px;
   margin-top: 24px;
   padding: 18px;
-  border: 1px solid rgba(17, 19, 24, 0.08);
-  border-radius: 18px;
-  background: rgba(247, 244, 234, 0.72);
+  border: 1px solid #171714;
+  border-radius: 0;
+  background: rgba(236, 229, 213, 0.72);
 }
 
 .checkpoint input {
@@ -689,7 +718,7 @@
   height: 40px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 0;
   font-family: var(--font-display);
 }
 
@@ -720,7 +749,7 @@
 
 .service > span {
   padding: 6px 8px;
-  border-radius: 6px;
+  border-radius: 999px;
   font: 700 11px var(--font-data);
   text-transform: uppercase;
 }
@@ -748,9 +777,9 @@
   margin: -10px 0 18px;
   padding: 10px;
   overflow-wrap: anywhere;
-  border-radius: 8px;
+  border-radius: 0;
   color: var(--slate);
-  background: color-mix(in srgb, var(--paper) 82%, var(--carbon));
+  background: rgba(23, 23, 20, 0.06);
   font-size: 10px;
   line-height: 1.5;
 }
@@ -762,13 +791,14 @@
 .inlineActions button {
   min-height: 48px;
   padding: 0 14px;
-  border: 0;
-  border-radius: 10px;
+  border: 1px solid #2457ff;
+  border-radius: 0;
   color: white;
-  background: var(--carbon);
+  background: #2457ff;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 4px 4px 0 rgba(23, 23, 20, 0.18);
 }
 
 .connection .uploadButton {
@@ -818,10 +848,10 @@
   min-height: 48px;
   padding: 0 13px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 0;
   outline: 0;
   color: var(--carbon);
-  background: var(--cloud-soft);
+  background: rgba(255, 255, 255, 0.74);
   font: inherit;
   font-size: 13px;
 }
@@ -861,8 +891,8 @@
   display: grid;
   gap: 10px;
   padding: 14px;
-  border-radius: 10px;
-  background: var(--cloud-soft);
+  border-radius: 0;
+  background: rgba(23, 23, 20, 0.04);
 }
 
 .result p {
@@ -886,7 +916,7 @@
   margin-top: 14px;
   padding: 0;
   overflow: hidden;
-  background: var(--cloud-soft);
+  background: rgba(23, 23, 20, 0.12);
 }
 
 .list article,
@@ -924,7 +954,7 @@
   top: 22px;
   right: 22px;
   padding: 10px 12px;
-  border: 1px solid rgba(55, 124, 62, 0.28);
+  border: 1px solid rgba(30, 128, 104, 0.48);
   border-radius: 999px;
   color: var(--jade);
   font: 700 11px/1.25 var(--font-data);
@@ -941,8 +971,9 @@
 
 .receiptGrid div {
   padding: 14px;
-  border-radius: 14px;
-  background: rgba(247, 244, 234, 0.8);
+  border: 1px solid rgba(23, 23, 20, 0.1);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.48);
 }
 
 .receiptGrid dt {
@@ -973,19 +1004,19 @@
 .textButton {
   min-height: 48px;
   padding: 0 14px;
-  border: 1px solid rgba(17, 19, 24, 0.12);
-  border-radius: 10px;
-  color: var(--slate);
-  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid #171714;
+  border-radius: 0;
+  color: #171714;
+  background: transparent;
   cursor: pointer;
 }
 
 .locked {
   margin: 24px 0;
   padding: 16px;
-  border-radius: 10px;
+  border-left: 4px solid #2457ff;
   color: var(--slate);
-  background: var(--cloud-soft);
+  background: rgba(23, 23, 20, 0.04);
   font-size: 12px;
 }
 
@@ -1000,6 +1031,7 @@
     display: grid;
     gap: 16px;
     padding: 20px;
+    border-right: 0;
   }
 
   .workspace {
