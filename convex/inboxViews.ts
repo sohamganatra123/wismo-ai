@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { query } from "./_generated/server";
+import { estimateAgentCostUsd } from "./domain/agentCost";
 
 const activeStatuses = ["queued", "running", "waiting"] as const;
 
@@ -22,6 +23,7 @@ export const activeAutomation = query({
         round: run.round,
         startedAt: run.startedAt,
         updatedAt: run.updatedAt,
+        estimatedCostUsd: estimateAgentCostUsd({ model: process.env.OPENAI_MODEL ?? "gpt-5-mini", inputTokens: run.inputTokens, outputTokens: run.outputTokens }),
         currentStep: current ? { name: current.name, kind: current.kind, status: current.status } : null,
       };
     }));
