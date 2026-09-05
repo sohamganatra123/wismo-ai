@@ -4,6 +4,8 @@ import CaseActions from "./CaseActions";
 import { cases, getCase } from "../caseData";
 import styles from "./page.module.css";
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() { return cases.map((item) => ({ caseId: item.id })); }
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ caseId: string }> }) {
