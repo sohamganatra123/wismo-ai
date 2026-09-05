@@ -4,8 +4,10 @@ import { makeFunctionReference } from "convex/server";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { startTransition, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import FounderReplyComposer from "./FounderReplyComposer";
-import { messagesForCase, type InboxMessage } from "./liveCaseCompatibility";
+import { conversationForCase, type InboxMessage } from "./liveCaseCompatibility";
+import { caseStateLabel } from "./conversationPresentation";
 import styles from "./page.module.css";
 
 type ReceivedCase = {
@@ -28,6 +30,8 @@ type ReceivedCase = {
   agentRunStatus: "queued" | "running" | "waiting" | "completed" | "failed" | "escalated" | null;
   customer: { name: string; email: string } | null;
   canFounderReply?: boolean;
+  replyCapability?: { allowed: boolean; reason: string };
+  agentHandoff?: { reason: string | null; recommendation: string | null; draft: string | null } | null;
   messages?: InboxMessage[];
   orders: Array<{
     id: string;
@@ -101,11 +105,11 @@ function messageSnippet(value: string) {
 function statusLabel(status: ReceivedCase["status"], messages: InboxMessage[] = []) {
   switch (status) {
     case "closed":
-      return messages.some((message) => message.kind === "founder_reply")
+      return messages.some((message) => message.kind === "founder_reply" && message.deliveryStatus === "sent")
         ? "Founder replied"
         : "Auto-replied";
     case "order_needed":
-      return "Clarifying";
+      return caseStateLabel(status, messages) ?? "Clarifying";
     case "identity_needed":
       return "Identity check";
     case "awaiting_approval":
@@ -124,7 +128,7 @@ function statusLabel(status: ReceivedCase["status"], messages: InboxMessage[] = 
 function messageLabel(message: InboxMessage) {
   switch (message.kind) {
     case "agent_clarification":
-      return "Clarification sent";
+      return message.deliveryStatus === "sent" ? "Clarification sent" : "Clarification draft";
     case "founder_reply":
       return "Founder reply";
     case "agent_reply":
@@ -138,10 +142,12 @@ function CaseState({
   status,
   hasCustomer,
   hasFounderReply,
+  messages,
 }: {
   status: ReceivedCase["status"];
   hasCustomer: boolean;
   hasFounderReply: boolean;
+  messages: InboxMessage[];
 }) {
   if (status === "closed") {
     if (hasFounderReply) {
@@ -165,9 +171,9 @@ function CaseState({
   if (status === "order_needed") {
     return (
       <section className={styles.caseState} data-tone="watch">
-        <small>Clarification sent</small>
-        <strong>Waiting for the customer to clarify the order or question.</strong>
-        <p>No safe single match was found, so WISMO asked a follow-up question instead of guessing.</p>
+        <small>{hasSentClarification(messages) ? "Clarification sent" : "Clarification needed"}</small>
+        <strong>{hasSentClarification(messages) ? "Waiting for the customer to clarify the order or question." : "No clarification has been sent yet."}</strong>
+        <p>{hasSentClarification(messages) ? "No safe single match was found, so WISMO asked a follow-up question instead of guessing." : "The agent prepared this case for review, but the conversation has no delivered clarification."}</p>
       </section>
     );
   }
@@ -229,6 +235,10 @@ function CaseState({
       <p>WISMO will either answer, ask for clarification, or send it for review.</p>
     </section>
   );
+}
+
+function hasSentClarification(messages: InboxMessage[]) {
+  return messages.some((message) => message.kind === "agent_clarification" && message.deliveryStatus === "sent");
 }
 
 type InvestigationEvidence = {
@@ -320,6 +330,7 @@ export default function LiveCases() {
   const [investigations] = useState<Record<string, InvestigationEvidence>>({});
   const [feedback, setFeedback] = useState("");
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
   async function pollNow() {
     setWorking(true);
     setFeedback("");
@@ -457,8 +468,9 @@ export default function LiveCases() {
           </p>
         ) : (
           (() => {
-            const selected = rows.find((item) => item.id === selectedCaseId) ?? rows[0];
-            const selectedMessages = messagesForCase(selected);
+            const selected = rows.find((item) => item.id === (selectedCaseId ?? searchParams.get("case"))) ?? rows[0];
+            const selectedConversation = conversationForCase(selected);
+            const selectedMessages = selectedConversation.messages;
             const hasFounderReply = selectedMessages.some(
               (message) => message.kind === "founder_reply",
             );
@@ -489,7 +501,7 @@ export default function LiveCases() {
                           <h3>{item.subject}</h3>
                           <p>{messageSnippet(item.text)}</p>
                           <div className={styles.threadMeta}>
-                            <small>{statusLabel(item.status, messagesForCase(item))}</small>
+                            <small>{statusLabel(item.status, conversationForCase(item).messages)}</small>
                             {item.customer ? <span>Matched to {item.customer.name}</span> : null}
                           </div>
                         </div>
@@ -537,14 +549,33 @@ export default function LiveCases() {
                       status={selected.status}
                       hasCustomer={Boolean(selected.customer)}
                       hasFounderReply={hasFounderReply}
+                      messages={selectedMessages}
                     />
 
-                    {selected.canFounderReply && !hasFounderReply ? (
+                    {selected.replyCapability?.allowed && !hasFounderReply ? (
                       <FounderReplyComposer
                         key={selected.id}
                         caseId={selected.id}
                         recipientName={senderLabel(selected.from)}
+                        recipientEmail={selected.customer?.email}
                       />
+                    ) : selected.status === "human_attention" && selected.replyCapability ? (
+                      <p className={styles.replyUnavailable} role="status">
+                        {selected.replyCapability.reason === "founder_only"
+                          ? "Only the founder can send a reviewed reply."
+                          : selected.replyCapability.reason === "case_closed"
+                            ? "This conversation is already resolved."
+                            : "A founder reply is already recorded for this conversation."}
+                      </p>
+                    ) : null}
+
+                    {selected.agentHandoff ? (
+                      <section className={styles.caseState} data-tone="danger">
+                        <small>Agent handoff</small>
+                        <strong>{selected.agentHandoff.reason ?? "Manual review requested"}</strong>
+                        {selected.agentHandoff.recommendation ? <p>Recommendation: {selected.agentHandoff.recommendation}</p> : null}
+                        {selected.agentHandoff.draft ? <p><em>Draft — not sent:</em> {selected.agentHandoff.draft}</p> : null}
+                      </section>
                     ) : null}
 
                     {selected.agentRunStatus === "failed" ? (

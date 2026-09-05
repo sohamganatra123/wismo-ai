@@ -36,3 +36,11 @@ export function messagesForCase(item: CaseWithOptionalMessages): InboxMessage[] 
     deliveryStatus: null,
   }];
 }
+
+export function conversationForCase(item: CaseWithOptionalMessages) {
+  const complete = Array.isArray(item.messages) && item.messages.length > 0;
+  return {
+    completeness: complete ? ("complete" as const) : ("source_only" as const),
+    messages: messagesForCase(item),
+  };
+}

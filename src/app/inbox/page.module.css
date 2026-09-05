@@ -56,6 +56,9 @@
   font-weight: 650;
 }
 .rail nav a {
+  color: rgba(247, 244, 234, 0.74);
+}
+.rail nav a[aria-current="page"] {
   color: white;
   background: rgba(255, 255, 255, 0.04);
   box-shadow: inset 4px 0 0 #2457ff;
@@ -431,6 +434,14 @@
   padding: 22px;
   border-top: 2px solid #171714;
   background: #ece5d5;
+}
+
+.replyUnavailable {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--ink-muted);
+  color: var(--ink-muted);
+  background: var(--paper-deep);
 }
 .replyComposer > header,
 .replyComposer form footer {

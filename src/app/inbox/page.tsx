@@ -17,8 +17,8 @@ export default function HumanAttentionInbox() {
             <span>Inbox</span>
             <b>Live</b>
           </Link>
-          <span aria-disabled="true">Active automation</span>
-          <span aria-disabled="true">History</span>
+          <Link href="/inbox/automation">Active automation</Link>
+          <Link href="/inbox/history">History</Link>
         </nav>
         <div className={styles.boundary}>
           <i />

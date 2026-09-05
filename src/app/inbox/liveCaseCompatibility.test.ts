@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { messagesForCase, type InboxMessage } from "./liveCaseCompatibility";
+import { conversationForCase, messagesForCase, type InboxMessage } from "./liveCaseCompatibility";
 
 const legacyCase = {
   id: "case-1",
@@ -40,5 +40,9 @@ describe("messagesForCase", () => {
     }];
 
     expect(messagesForCase({ ...legacyCase, messages })).toBe(messages);
+  });
+
+  it("marks a legacy response as source-only instead of implying delivery", () => {
+    expect(conversationForCase(legacyCase).completeness).toBe("source_only");
   });
 });

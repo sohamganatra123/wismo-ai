@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { recordCaseEvent } from "./lib/caseEvents";
+import { manualReplyCapability } from "./domain/manualReplyAccess";
 
 export const getConnection = internalQuery({
   args: {},
@@ -385,6 +386,11 @@ export const listReceivedCases = query({
         const contactAttempt = await ctx.db.query("contactAttempts").withIndex("by_case", (q) => q.eq("caseId", item._id)).first();
         const courierContact = contactAttempt ? await ctx.db.get(contactAttempt.contactId) : null;
         const courierReply = contactAttempt?.replyMessageId ? await ctx.db.get(contactAttempt.replyMessageId) : null;
+        const hasFounderReply = threadMessages.some(
+          (threadMessage) =>
+            threadMessage.direction === "outbound" && threadMessage.kind === "founder_reply" &&
+            threadMessage.deliveryStatus === "sent",
+        );
         return message
           ? {
               id: item._id,
@@ -402,6 +408,19 @@ export const listReceivedCases = query({
               escalatedAt: item.escalatedAt ?? null,
               guidance: item.guidance ?? null,
               canFounderReply: profile.role === "founder",
+              replyCapability: manualReplyCapability({
+                role: profile.role,
+                caseStatus: item.status,
+                hasFounderReply,
+              }),
+              agentHandoff:
+                item.status === "human_attention"
+                  ? {
+                      reason: item.escalationReason ?? latestAgentRun?.error ?? null,
+                      recommendation: item.recommendation ?? latestAgentRun?.recommendation ?? null,
+                      draft: latestAgentRun?.finalText ?? null,
+                    }
+                  : null,
               messages: threadMessages
                 .sort((left, right) => left.sentAt - right.sentAt)
                 .map((threadMessage) => ({

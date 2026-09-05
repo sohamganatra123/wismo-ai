@@ -9,6 +9,7 @@ import {
 } from "./domain/founderReply";
 import { recordCaseEvent } from "./lib/caseEvents";
 import { decryptCredentials } from "./security/credentials";
+import { manualReplyCapability } from "./domain/manualReplyAccess";
 
 type Tokens = { refresh_token?: string };
 
@@ -79,6 +80,24 @@ export const claim = internalMutation({
     const latestCustomerMessage = thread
       .filter((message) => message.direction === "inbound" && message.party === "customer")
       .sort((left, right) => right.sentAt - left.sentAt)[0] ?? source;
+    const hasFounderReply = thread.some(
+      (message) =>
+        message.direction === "outbound" && message.kind === "founder_reply" &&
+        message.deliveryStatus === "sent",
+    );
+    const capability = manualReplyCapability({
+      role: profile.role,
+      caseStatus: item.status,
+      hasFounderReply,
+    });
+    if (!capability.allowed) {
+      if (capability.reason === "reply_already_sent") return { status: "already_sent" as const };
+      throw new Error(
+        capability.reason === "case_closed"
+          ? "This conversation is already resolved"
+          : "Founder access required",
+      );
+    }
     const payload = founderReplyDraft({
       caseId: item._id,
       threadId: source.threadId,

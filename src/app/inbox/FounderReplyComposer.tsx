@@ -2,7 +2,7 @@
 
 import { useAction } from "convex/react";
 import { makeFunctionReference } from "convex/server";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./page.module.css";
 
 const sendFounderReplyRef = makeFunctionReference<
@@ -21,9 +21,11 @@ function requestId() {
 export default function FounderReplyComposer({
   caseId,
   recipientName,
+  recipientEmail,
 }: {
   caseId: string;
   recipientName: string;
+  recipientEmail?: string;
 }) {
   const sendFounderReply = useAction(sendFounderReplyRef);
   const [text, setText] = useState("");
@@ -31,6 +33,19 @@ export default function FounderReplyComposer({
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [feedbackTone, setFeedbackTone] = useState<"success" | "error">("success");
+  const restored = useRef(false);
+  const draftKey = `wismo:founder-reply-draft:${caseId}`;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.sessionStorage.getItem(draftKey);
+    window.setTimeout(() => {
+      if (saved) setText(saved);
+      restored.current = true;
+    }, 0);
+  }, [draftKey]);
+  useEffect(() => {
+    if (restored.current && typeof window !== "undefined") window.sessionStorage.setItem(draftKey, text);
+  }, [draftKey, text]);
   const remaining = 4_000 - text.length;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -43,6 +58,7 @@ export default function FounderReplyComposer({
     try {
       const result = await sendFounderReply({ caseId, requestId: sendRequestId, text: reply });
       setText("");
+      if (typeof window !== "undefined") window.sessionStorage.removeItem(draftKey);
       setSendRequestId(requestId());
       setFeedbackTone("success");
       setFeedback(
@@ -51,7 +67,6 @@ export default function FounderReplyComposer({
           : "Reply sent in Gmail. The case is resolved and this reply is saved as an agent example.",
       );
     } catch (error) {
-      setSendRequestId(requestId());
       setFeedbackTone("error");
       setFeedback(error instanceof Error ? error.message : "The reply could not be sent");
     } finally {
@@ -66,7 +81,7 @@ export default function FounderReplyComposer({
           <small>Founder reply</small>
           <strong id={`reply-title-${caseId}`}>Reply to {recipientName}</strong>
         </div>
-        <span>Saved as an example after Gmail confirms the send.</span>
+        <span>{recipientEmail ? `Sending to ${recipientEmail}` : "Saved as an example after Gmail confirms the send."}</span>
       </header>
       <form onSubmit={submit}>
         <label htmlFor={`reply-${caseId}`}>Message</label>
