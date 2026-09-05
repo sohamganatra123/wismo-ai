@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "eval": "vitest run src/evals/wismoEval.test.ts",
     "test:watch": "vitest"
   },
   "dependencies": {

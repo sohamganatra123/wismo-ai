@@ -1,0 +1,33 @@
+name: WISMO eval and build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  eval-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Run 100-case safety eval
+        env:
+          WISMO_EVAL_REPORT: artifacts/wismo-eval-report.json
+        run: |
+          npm run eval -- --reporter=verbose
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wismo-eval-report
+          path: artifacts/wismo-eval-report.json
+          retention-days: 30
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
