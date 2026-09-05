@@ -1,6 +1,7 @@
 "use client";
 
 import { makeFunctionReference } from "convex/server";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import Link from "next/link";
 import { startTransition, useState } from "react";
@@ -8,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import FounderReplyComposer from "./FounderReplyComposer";
 import { conversationForCase, type InboxMessage } from "./liveCaseCompatibility";
 import { caseStateLabel } from "./conversationPresentation";
+import ObservabilityDisclosure from "./ObservabilityDisclosure";
 import styles from "./page.module.css";
 
 type ReceivedCase = {
@@ -551,6 +553,7 @@ export default function LiveCases() {
                       hasFounderReply={hasFounderReply}
                       messages={selectedMessages}
                     />
+                    <ObservabilityDisclosure caseId={selected.id as Id<"cases">} />
 
                     {selected.replyCapability?.allowed && !hasFounderReply ? (
                       <FounderReplyComposer

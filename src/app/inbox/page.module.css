@@ -443,6 +443,16 @@
   color: var(--ink-muted);
   background: var(--paper-deep);
 }
+
+.observability {
+  padding: 14px;
+  border-top: 1px solid rgba(23, 23, 20, 0.16);
+  background: var(--paper-deep);
+}
+.observability summary { cursor: pointer; font-weight: 700; }
+.observability ol { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 18px; }
+.observability li { display: grid; gap: 2px; }
+.observability time, .observability span { color: var(--ink-muted); font-size: 12px; }
 .replyComposer > header,
 .replyComposer form footer {
   display: flex;

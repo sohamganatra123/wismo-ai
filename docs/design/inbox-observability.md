@@ -4,6 +4,10 @@
 
 Let a founder understand what WISMO did, what evidence it used, where it stopped, and whether an external action succeeded—without leaving the live inbox or reading raw system logs.
 
+## Implementation choice
+
+V1 uses a custom Convex projection rather than an external vendor. The product already persists agent runs, steps, events, approvals, and sent messages, so `observability:getCaseObservability` exposes a bounded, authenticated activity trace without exporting customer content or requiring another service. Opik or Langfuse can be added later as an external sink without changing the inbox contract.
+
 ## Current-code findings
 
 - The Inbox navigation renders **History** as `aria-disabled="true"`; there is no History route or interactive tab.
