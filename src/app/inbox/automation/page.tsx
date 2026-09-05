@@ -8,6 +8,8 @@ import styles from "../page.module.css";
 type Run = { id: string; caseId: string | null; status: string; trigger: string; round: number; startedAt: number; updatedAt: number; estimatedCostUsd: number | null; currentStep: { name: string; kind: string; status: string } | null };
 const ref = makeFunctionReference<"query", Record<string, never>, Run[]>("inboxViews:activeAutomation");
 
+export const dynamic = "force-dynamic";
+
 export default function ActiveAutomationPage() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const runs = useQuery(ref, isAuthenticated ? {} : "skip");
