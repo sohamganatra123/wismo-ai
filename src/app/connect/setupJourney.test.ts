@@ -12,6 +12,7 @@ describe("setupJourney", () => {
       briefConfirmed: false,
       gmailConnected: false,
       ordersLoaded: false,
+      shopifyConnected: false,
       contactCount: 0,
       ruleCount: 0,
       pendingMemoryCount: 0,
@@ -34,6 +35,7 @@ describe("setupJourney", () => {
       briefConfirmed: true,
       gmailConnected: true,
       ordersLoaded: true,
+      shopifyConnected: false,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 0,
@@ -56,6 +58,7 @@ describe("setupJourney", () => {
       briefConfirmed: true,
       gmailConnected: true,
       ordersLoaded: true,
+      shopifyConnected: false,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 0,
@@ -69,11 +72,29 @@ describe("setupJourney", () => {
     expect(firstIncompleteStage(progress)).toBe("activate");
   });
 
+  it("lets the flow continue with Shopify when no CSV is loaded", () => {
+    const progress = deriveSetupProgress({
+      briefConfirmed: true,
+      gmailConnected: true,
+      ordersLoaded: false,
+      shopifyConnected: true,
+      contactCount: 1,
+      ruleCount: 1,
+      pendingMemoryCount: 0,
+      reviewConfirmed: true,
+      activated: false,
+    });
+
+    expect(progress.sourcesDone).toBe(true);
+    expect(firstIncompleteStage(progress)).toBe("activate");
+  });
+
   it("does not mark review done while memory proposals are pending", () => {
     const progress = deriveSetupProgress({
       briefConfirmed: true,
       gmailConnected: true,
       ordersLoaded: true,
+      shopifyConnected: false,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 2,
@@ -96,6 +117,7 @@ describe("setupJourney", () => {
       briefConfirmed: true,
       gmailConnected: true,
       ordersLoaded: true,
+      shopifyConnected: false,
       contactCount: 1,
       ruleCount: 1,
       pendingMemoryCount: 0,

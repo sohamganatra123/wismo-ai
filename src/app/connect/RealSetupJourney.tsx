@@ -46,6 +46,7 @@ const integrationsRef = makeFunctionReference<"query", Record<string, never>, In
 const settingsRef = makeFunctionReference<"query", Record<string, never>, Settings>("settings:getFounderSettings");
 const memoriesRef = makeFunctionReference<"query", Record<string, never>, Memory[]>("memories:listFounderMemories");
 const gmailRef = makeFunctionReference<"action", Record<string, never>, string>("integrations:beginGmailConnection");
+const shopifyRef = makeFunctionReference<"action", { shopDomain: string; accessToken: string }, { accountLabel: string; storeName: string }>("integrations:connectShopify");
 const orderImportStatusRef = makeFunctionReference<"query", Record<string, never>, OrderImportStatus | null>("orderImports:getStatus");
 const replaceOrdersRef = makeFunctionReference<"mutation", { filename: string; rows: OrderRecord[] }, { importId: string; rowCount: number }>("orderImports:replace");
 const inviteRef = makeFunctionReference<"action", { email: string }, { token: string; expiresAt: number }>("access:createInvite");
@@ -107,11 +108,13 @@ function FounderSetup({ profile }: { profile: Profile }) {
   }, [draft]);
 
   const gmailIntegration = currentIntegrations.find((item) => item.kind === "gmail");
+  const shopifyIntegration = currentIntegrations.find((item) => item.kind === "shopify");
   const pendingMemories = currentMemories.filter((memory) => memory.status === "proposed");
   const progress = deriveSetupProgress({
     briefConfirmed: draft.briefConfirmed,
     gmailConnected: Boolean(gmailIntegration),
     ordersLoaded: Boolean(orderImport),
+    shopifyConnected: Boolean(shopifyIntegration),
     contactCount: currentSettings.contacts.length,
     ruleCount: currentSettings.rules.length,
     pendingMemoryCount: pendingMemories.length,
@@ -181,7 +184,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
           <p className={styles.eyebrow}>Setup control room</p>
           <h1>Move through the founder setup in order.</h1>
           <p>
-            Connect Gmail, load a current orders CSV, then set the founder rules before opening the inbox.
+            Connect Gmail, add CSV or Shopify order data, then set the founder rules before opening the inbox.
           </p>
         </header>
 
@@ -204,6 +207,7 @@ function FounderSetup({ profile }: { profile: Profile }) {
         {visibleStage === "sources" ? (
           <SourcesStage
             gmailIntegration={gmailIntegration}
+            shopifyIntegration={shopifyIntegration}
             orderImport={orderImport}
             onContinue={() => setSelectedStage("learn")}
           />
@@ -418,26 +422,28 @@ function BriefStage({
 
 function SourcesStage({
   gmailIntegration,
+  shopifyIntegration,
   orderImport,
   onContinue,
 }: {
   gmailIntegration?: Integration;
+  shopifyIntegration?: Integration;
   orderImport: OrderImportStatus | null;
   onContinue: () => void;
 }) {
-  const ready = Boolean(gmailIntegration && orderImport);
+  const ready = Boolean(gmailIntegration && (orderImport || shopifyIntegration));
 
   return (
     <StageFrame
       number="02"
       eyebrow="Sources"
       title="Connect the evidence WISMO needs."
-      text="Connect Gmail, then upload the current order snapshot WISMO will use for replies."
+      text="Connect Gmail, then add at least one order source: a CSV snapshot or Shopify."
     >
       <AgentNote
         label="Next action"
-        title="Connect the inbox and load orders"
-        text="Both sources must be ready before WISMO can answer a delivery question safely."
+        title="Connect the inbox and add order data"
+        text="Gmail plus one order source is enough. Shopify is optional when a CSV snapshot is available, and CSV is optional when Shopify is connected."
       />
 
       <div className={styles.summaryGrid}>
@@ -448,14 +454,20 @@ function SourcesStage({
         />
         <SummaryCard
           label="Orders CSV"
-          value={orderImport ? `${orderImport.rowCount} loaded` : "Required"}
+          value={orderImport ? `${orderImport.rowCount} loaded` : "Optional"}
           detail={orderImport ? `${orderImport.filename} · imported ${new Date(orderImport.importedAt).toLocaleString()}` : "Upload a fresh order snapshot with customer, status, and tracking fields."}
+        />
+        <SummaryCard
+          label="Shopify"
+          value={shopifyIntegration ? "Connected" : "Optional"}
+          detail={shopifyIntegration ? shopifyIntegration.accountLabel : "Connect Shopify to read customer, order, fulfillment, and tracking facts directly."}
         />
       </div>
 
       <div className={styles.cardsGrid}>
         <GmailCard integration={gmailIntegration} />
         <OrderCsvCard orderImport={orderImport} />
+        <ShopifyCard integration={shopifyIntegration} />
       </div>
 
       <div className={styles.stageActions}>
@@ -794,6 +806,45 @@ function GmailCard({ integration }: { integration?: Integration }) {
         {working ? "Opening Google…" : integration ? "Reconnect Gmail" : "Connect Gmail"}
       </button>
       {error ? <p className={styles.error}>{error}</p> : null}
+    </article>
+  );
+}
+
+function ShopifyCard({ integration }: { integration?: Integration }) {
+  const connect = useAction(shopifyRef);
+  const [domain, setDomain] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [working, setWorking] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setWorking(true);
+    setFeedback("");
+    try {
+      const result = await connect({ shopDomain: domain, accessToken });
+      setFeedback(`${result.storeName} connected. New cases will use Shopify first.`);
+      setDomain("");
+      setAccessToken("");
+    } catch (reason) {
+      setFeedback(message(reason, "Shopify connection failed"));
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  return (
+    <article className={styles.connection}>
+      <Service icon="S" kind="orders" label="Optional order source" name="Shopify" connected={Boolean(integration)} />
+      <p>{integration?.accountLabel ?? "Read customer, order, fulfillment, and tracking facts directly from Shopify."}</p>
+      {integration ? <p className={styles.feedback}>Connected. Shopify is preferred when both sources are available.</p> : (
+        <form onSubmit={submit}>
+          <label>Store domain<input required value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="northstar-goods.myshopify.com" autoComplete="url" /></label>
+          <label>Admin API token<input required type="password" value={accessToken} onChange={(event) => setAccessToken(event.target.value)} placeholder="shpat_…" autoComplete="off" /></label>
+          <button type="submit" disabled={working}>{working ? "Checking Shopify…" : "Connect Shopify"}</button>
+        </form>
+      )}
+      {feedback ? <p className={styles.feedback} role="status">{feedback}</p> : null}
     </article>
   );
 }

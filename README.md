@@ -53,7 +53,8 @@ Each case exposes its activity, agent status, token usage, estimated model cost,
 ## What is live today
 
 - Gmail polling for delivery-status conversations
-- A validated `orders.csv` snapshot as the order source
+- A validated `orders.csv` snapshot as an order source
+- Optional Shopify connection for live customer, order, fulfillment, and tracking facts
 - Exact customer and order matching
 - Deterministic clarification for missing or ambiguous information
 - Courier follow-up and customer-update workflows
@@ -61,6 +62,8 @@ Each case exposes its activity, agent status, token usage, estimated model cost,
 - Case activity and agent-run observability
 - Conversation-wide input tokens, output tokens, and estimated model cost
 - A 100-case deterministic safety evaluation in CI
+
+Gmail is required. Add either a validated CSV snapshot or a Shopify connection. If both are connected, Shopify is used first and CSV remains available as a fallback source.
 
 ## Safety first
 
@@ -195,4 +198,4 @@ docs/evals/             Eval documentation
 
 ## Current boundary
 
-WISMO currently focuses on one Gmail inbox and one validated order snapshot. Shopify, Slack, Zoom, CRM integrations, automatic sending beyond the configured safety gates, and broad knowledge-management features are outside this version’s scope.
+WISMO currently focuses on one Gmail inbox and one or more controlled order sources: a validated CSV snapshot and, optionally, Shopify. Slack, Zoom, CRM integrations, automatic sending beyond the configured safety gates, and broad knowledge-management features are outside this version’s scope.

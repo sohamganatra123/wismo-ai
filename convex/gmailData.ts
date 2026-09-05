@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { recordCaseEvent } from "./lib/caseEvents";
+import { scheduleCaseAgentRun } from "./lib/agentScheduling";
 import { manualReplyCapability } from "./domain/manualReplyAccess";
 
 export const getConnection = internalQuery({
@@ -151,6 +152,14 @@ export const prepareInbound = internalMutation({
         summary: `Received Gmail message “${args.subject}”`,
         contextSource: "gmail",
       });
+      const shopifyConnection = await ctx.db
+        .query("integrations")
+        .withIndex("by_kind", (q) => q.eq("kind", "shopify"))
+        .unique();
+      if (shopifyConnection) {
+        await scheduleCaseAgentRun(ctx, { caseId, trigger: "inbound" });
+        return { action: "agent" as const, caseId };
+      }
       const activeImport = await ctx.db
         .query("orderImports")
         .withIndex("by_active", (q) => q.eq("active", true))

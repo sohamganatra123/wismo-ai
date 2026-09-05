@@ -15,6 +15,7 @@ export type SetupProgressInput = {
   briefConfirmed: boolean;
   gmailConnected: boolean;
   ordersLoaded: boolean;
+  shopifyConnected: boolean;
   contactCount: number;
   ruleCount: number;
   pendingMemoryCount: number;
@@ -59,7 +60,7 @@ export function deriveSetupProgress(input: SetupProgressInput): SetupProgress {
   const pendingMemoryCount = Math.max(0, input.pendingMemoryCount);
 
   const briefDone = input.briefConfirmed;
-  const sourcesDone = briefDone && input.gmailConnected && input.ordersLoaded;
+  const sourcesDone = briefDone && input.gmailConnected && (input.ordersLoaded || input.shopifyConnected);
   const learnDone = sourcesDone && contactCount > 0 && ruleCount > 0;
   const reviewDone = learnDone && pendingMemoryCount === 0 && input.reviewConfirmed;
   const activated = reviewDone && input.activated;
