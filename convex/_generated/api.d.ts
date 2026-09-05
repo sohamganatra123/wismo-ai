@@ -61,6 +61,7 @@ import type * as lib_agentScheduling from "../lib/agentScheduling.js";
 import type * as lib_caseEvents from "../lib/caseEvents.js";
 import type * as lib_escalations from "../lib/escalations.js";
 import type * as memories from "../memories.js";
+import type * as observability from "../observability.js";
 import type * as orderImports from "../orderImports.js";
 import type * as security_credentials from "../security/credentials.js";
 import type * as services_contracts from "../services/contracts.js";
@@ -130,6 +131,7 @@ declare const fullApi: ApiFromModules<{
   "lib/caseEvents": typeof lib_caseEvents;
   "lib/escalations": typeof lib_escalations;
   memories: typeof memories;
+  observability: typeof observability;
   orderImports: typeof orderImports;
   "security/credentials": typeof security_credentials;
   "services/contracts": typeof services_contracts;
